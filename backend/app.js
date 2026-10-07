@@ -40,6 +40,7 @@ const adminUrls = process.env.ADMIN_URL
 
 const defaultAllowed = [
   "http://localhost:5173",
+  "https://masti-adda-admin-ujg8.vercel.app"
 ];
 
 const allowedOrigins = [...new Set([...frontendUrls, ...adminUrls, ...defaultAllowed])];
