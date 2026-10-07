@@ -1,0 +1,95 @@
+const MicrodramaEpisode = require(
+  "../models/microdramaEpisode.model"
+);
+
+const Microdrama = require(
+  "../models/microdrama.model"
+);
+
+const fs = require("fs");
+const path = require("path");
+
+// ========================================
+// GET MICRODRAMA EPISODES
+// ========================================
+const getMicrodramaEpisodes =
+  async (req, res) => {
+    try {
+
+      const {
+        microdramaId,
+      } = req.params;
+
+      const episodes =
+        await MicrodramaEpisode.find({
+          microdramaId,
+        }).sort({
+          episodeNumber: 1,
+        }).lean();  
+
+      return res.json({
+        success: true,
+        episodes,
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to fetch episodes",
+      });
+    }
+  };
+
+
+// ========================================
+// SEARCH MICRODRAMA EPISODES
+// ========================================
+const searchMicrodramaEpisodes =
+  async (req, res) => {
+    try {
+
+      const {
+        microdramaId,
+      } = req.params;
+
+      const { q } = req.query;
+
+      const episodes =
+        await MicrodramaEpisode.find({
+
+          microdramaId,
+
+          title: {
+            $regex: q || "",
+            $options: "i",
+          },
+        }).sort({
+          episodeNumber: 1,
+        });
+
+      return res.json({
+        success: true,
+        results: episodes,
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Search failed",
+      });
+    }
+  };
+
+
+module.exports = {
+  getMicrodramaEpisodes,
+  searchMicrodramaEpisodes,
+};

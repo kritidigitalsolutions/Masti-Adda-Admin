@@ -1,0 +1,609 @@
+const Microdrama = require(
+  "../../models/microdrama.model"
+);
+
+const MicrodramaEpisode = require(
+  "../../models/microdramaEpisode.model"
+);
+
+const { getMediaUrl, deleteMedia } = require("../../utils/mediaUrl");
+
+
+// ========================================
+// HELPERS
+// ========================================
+
+const parseJSON = (
+  value,
+  defaultValue = []
+) => {
+  try {
+    return value
+      ? JSON.parse(value)
+      : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+};
+
+
+// ========================================
+// ADD MICRODRAMA
+// ========================================
+
+const addMicrodrama = async (
+  req,
+  res
+) => {
+  try {
+
+    const genre = parseJSON(
+      req.body.genre
+    );
+
+    const category = parseJSON(
+      req.body.category
+    );
+
+    const cast = parseJSON(
+      req.body.cast
+    );
+
+    const poster =
+      req.files?.poster?.[0];
+
+    const banner =
+      req.files?.banner?.[0];
+
+    const trailer =
+      req.files?.trailer?.[0];
+
+    // CAST IMAGES
+    const castFiles = Object.keys(
+      req.files || {}
+    ).filter((key) =>
+      key.startsWith("castImage_")
+    );
+
+    castFiles.forEach((key) => {
+
+      const index =
+        key.split("_")[1];
+
+      const file =
+        req.files[key][0];
+
+      if (cast[index]) {
+        cast[index].image =
+          getMediaUrl(file);
+      }
+    });
+
+    // ========================================
+    // PRIORITY ALGORITHM
+    // ========================================
+
+    const inputPriority =
+      req.body.priority !== undefined
+        ? Number(req.body.priority)
+        : 0;
+
+    let priority = 0;
+
+    if (inputPriority > 0) {
+      // Shift up existing microdramas with priority >= inputPriority.
+      await Microdrama.updateMany(
+        { priority: { $gte: inputPriority } },
+        { $inc: { priority: 1 } }
+      );
+      priority = inputPriority;
+    } else {
+      // Auto-assign: maxPriority + 1
+      const maxShow = await Microdrama.findOne().sort("-priority");
+      priority =
+        maxShow && maxShow.priority
+          ? maxShow.priority + 1
+          : 1;
+    }
+
+    // ========================================
+    // CREATE MICRODRAMA
+    // ========================================
+
+    const microdrama =
+      await Microdrama.create({
+
+        title: req.body.title,
+
+        description:
+          req.body.description || "",
+
+        genre,
+
+        releaseYear:
+          req.body.releaseYear
+            ? Number(req.body.releaseYear)
+            : null,
+
+        releaseDate: req.body.releaseDate || "",
+
+        duration: req.body.duration || "",
+
+        rating: req.body.rating ? Number(req.body.rating) : 0,
+
+        language:
+          req.body.language || "",
+
+        poster: getMediaUrl(
+          poster,
+          req.body.poster
+        ),
+
+        banner: getMediaUrl(
+          banner,
+          req.body.banner
+        ),
+
+        trailerUrl: getMediaUrl(
+          trailer,
+          req.body.trailerUrl
+        ),
+
+        isPremium:
+          req.body.isPremium ===
+          "true",
+
+        isComingSoon:
+          req.body.isComingSoon === "true",
+
+        isPopular: req.body.isPopular === "true" || req.body.isPopular === true,
+
+        status:
+          req.body.status ||
+          "ongoing",
+
+        cast,
+
+        category,
+
+        priority,
+        isPublished: req.body.isPublished !== undefined ? req.body.isPublished === "true" || req.body.isPublished === true : true,
+        is18plus: req.body.is18plus === "true" || req.body.is18plus === true,
+        isHide: (req.body.is18plus === "true" || req.body.is18plus === true) ? (req.body.isHide === "true" || req.body.isHide === true) : false,
+      });
+
+    console.log(`✅ Success: Microdrama "${microdrama.title}" uploaded and saved successfully!`);
+
+    return res.status(201).json({
+      success: true,
+      message:
+        "Microdrama added successfully",
+      microdrama: microdrama,
+    });
+
+  } catch (error) {
+    console.error(`❌ Error: Failed to upload microdrama -> ${error.message}`);
+    console.error("ADD MICRODRAMA ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Failed to add microdrama",
+      error: error.message,
+    });
+  }
+};
+
+
+// ========================================
+// GET ALL MICRODRAMAS
+// ========================================
+
+const getAllMicrodramas =
+  async (req, res) => {
+    try {
+
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const skip = (page - 1) * limit;
+
+      const [microdramas, total] = await Promise.all([
+        Microdrama.find()
+          .sort({ priority: 1, createdAt: -1 })
+          .skip(skip)
+          .limit(limit),
+        Microdrama.countDocuments(),
+      ]);
+
+      return res.json({
+        success: true,
+        microdramas: microdramas,
+        total,
+        pages: Math.ceil(total / limit),
+        page,
+      });
+
+    } catch (error) {
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to fetch microdramas",
+      });
+    }
+  };
+
+
+// ========================================
+// GET SINGLE MICRODRAMA BY ID
+// ========================================
+
+const getMicrodramaById =
+  async (req, res) => {
+    try {
+
+      const microdrama =
+        await Microdrama.findById(
+          req.params.id
+        );
+
+      if (!microdrama) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Microdrama not found",
+        });
+      }
+
+      return res.json({
+        success: true,
+        microdrama: microdrama,
+      });
+
+    } catch (error) {
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to fetch microdrama",
+      });
+    }
+  };
+
+
+// ========================================
+// UPDATE MICRODRAMA
+// ========================================
+
+const updateMicrodrama =
+  async (req, res) => {
+    try {
+
+      const drama =
+        await Microdrama.findById(
+          req.params.id
+        );
+
+      if (!drama) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Microdrama not found",
+        });
+      }
+
+      const genre = parseJSON(
+        req.body.genre,
+        drama.genre
+      );
+
+      const category = parseJSON(
+        req.body.category,
+        drama.category
+      );
+
+      const cast = parseJSON(
+        req.body.cast,
+        drama.cast
+      );
+
+      if (req.body.title)
+        drama.title =
+          req.body.title;
+
+      if (req.body.description)
+        drama.description =
+          req.body.description;
+
+      if (req.body.language)
+        drama.language =
+          req.body.language;
+
+      if (req.body.releaseYear)
+        drama.releaseYear =
+          Number(req.body.releaseYear);
+
+      drama.genre = genre;
+
+      drama.category = category;
+
+      if (req.body.isPublished !== undefined) {
+        drama.isPublished = req.body.isPublished === "true" || req.body.isPublished === true;
+      }
+
+      if (req.body.is18plus !== undefined) {
+        drama.is18plus = req.body.is18plus === "true" || req.body.is18plus === true;
+      }
+      // isHide only takes effect when is18plus is true
+      if (req.body.isHide !== undefined) {
+        drama.isHide = drama.is18plus ? (req.body.isHide === "true" || req.body.isHide === true) : false;
+      } else if (!drama.is18plus) {
+        drama.isHide = false;
+      }
+
+      if (req.body.isPopular !== undefined) {
+        drama.isPopular = req.body.isPopular === "true" || req.body.isPopular === true;
+      }
+
+      if (req.body.isPremium !== undefined) {
+        drama.isPremium = req.body.isPremium === "true" || req.body.isPremium === true;
+      }
+
+      drama.status =
+        req.body.status ||
+        drama.status;
+
+
+      // POSTER
+      if (req.files?.poster?.[0]) {
+        deleteMedia(drama.poster);
+        drama.poster =
+          getMediaUrl(req.files.poster[0]);
+      } else if (req.body.posterUrl !== undefined && typeof req.body.posterUrl === "string" && req.body.posterUrl.trim() !== "") {
+        if (drama.poster && req.body.posterUrl && req.body.posterUrl !== drama.poster) {
+          deleteMedia(drama.poster);
+        }
+        drama.poster = req.body.posterUrl.trim();
+      } else if (req.body.poster !== undefined && typeof req.body.poster === "string" && req.body.poster.trim() !== "") {
+        if (drama.poster && req.body.poster && req.body.poster !== drama.poster) {
+          deleteMedia(drama.poster);
+        }
+        drama.poster = req.body.poster.trim();
+      }
+
+      // BANNER
+      if (req.files?.banner?.[0]) {
+        deleteMedia(drama.banner);
+        drama.banner =
+          getMediaUrl(req.files.banner[0]);
+      } else if (req.body.bannerUrl !== undefined && typeof req.body.bannerUrl === "string" && req.body.bannerUrl.trim() !== "") {
+        if (drama.banner && req.body.bannerUrl && req.body.bannerUrl !== drama.banner) {
+          deleteMedia(drama.banner);
+        }
+        drama.banner = req.body.bannerUrl.trim();
+      } else if (req.body.banner !== undefined && typeof req.body.banner === "string" && req.body.banner.trim() !== "") {
+        if (drama.banner && req.body.banner && req.body.banner !== drama.banner) {
+          deleteMedia(drama.banner);
+        }
+        drama.banner = req.body.banner.trim();
+      }
+
+      // TRAILER
+      if (req.files?.trailer?.[0]) {
+        deleteMedia(
+          drama.trailerUrl
+        );
+        drama.trailerUrl =
+          getMediaUrl(req.files.trailer[0]);
+      } else if (req.body.trailerUrl !== undefined && typeof req.body.trailerUrl === "string" && req.body.trailerUrl.trim() !== "") {
+        if (drama.trailerUrl && req.body.trailerUrl && req.body.trailerUrl !== drama.trailerUrl) {
+          deleteMedia(drama.trailerUrl);
+        }
+        drama.trailerUrl = req.body.trailerUrl.trim();
+      }
+
+
+      // CAST
+      const castFiles =
+        Object.keys(
+          req.files || {}
+        ).filter((key) =>
+          key.startsWith(
+            "castImage_"
+          )
+        );
+
+      castFiles.forEach((key) => {
+
+        const index =
+          key.split("_")[1];
+
+        const file =
+          req.files[key][0];
+
+        if (cast[index]) {
+          cast[index].image =
+            getMediaUrl(file);
+        }
+      });
+
+      drama.cast = cast;
+
+      // ========================================
+      // PRIORITY ALGORITHM FOR UPDATE
+      // ========================================
+
+      if (req.body.priority !== undefined) {
+        const newPriority = Number(req.body.priority) || 0;
+        const oldPriority = drama.priority || 0;
+
+        if (newPriority !== oldPriority) {
+          // Step 1: Remove show from its old slot
+          if (oldPriority > 0) {
+            await Microdrama.updateMany(
+              { _id: { $ne: drama._id }, priority: { $gt: oldPriority } },
+              { $inc: { priority: -1 } }
+            );
+          }
+
+          // Step 2: Insert show into its new slot
+          if (newPriority > 0) {
+            await Microdrama.updateMany(
+              { _id: { $ne: drama._id }, priority: { $gte: newPriority } },
+              { $inc: { priority: 1 } }
+            );
+            drama.priority = newPriority;
+          } else {
+            const maxDrama = await Microdrama.findOne({ _id: { $ne: drama._id } }).sort("-priority");
+            drama.priority = maxDrama && maxDrama.priority ? maxDrama.priority + 1 : 1;
+          }
+        }
+      }
+
+      await drama.save();
+
+      return res.json({
+        success: true,
+        message:
+          "Microdrama updated successfully",
+        drama,
+      });
+
+    } catch (error) {
+
+      console.error("UPDATE MICRODRAMA ERROR:", error);
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to update microdrama",
+        error: error.message,
+      });
+    }
+  };
+
+
+// ========================================
+// DELETE MICRODRAMA
+// ========================================
+
+const deleteMicrodrama =
+  async (req, res) => {
+    try {
+
+      const drama =
+        await Microdrama.findById(
+          req.params.id
+        );
+
+      if (!drama) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Microdrama not found",
+        });
+      }
+
+      const targetPriority = drama.priority || 0;
+
+      deleteMedia(drama.poster);
+
+      deleteMedia(drama.banner);
+
+      deleteMedia(
+        drama.trailerUrl
+      );
+
+      drama.cast.forEach((c) =>
+        deleteMedia(c.image)
+      );
+
+
+      // DELETE EPISODES
+      const episodes =
+        await MicrodramaEpisode.find({
+          microdramaId:
+            drama._id,
+        });
+
+      episodes.forEach((ep) => {
+        deleteMedia(ep.videoUrl);
+        deleteMedia(ep.thumbnail);
+      });
+
+      await MicrodramaEpisode.deleteMany({
+        microdramaId:
+          drama._id,
+      });
+
+      await Microdrama.findByIdAndDelete(
+        req.params.id
+      );
+
+      // Shift down priorities of all shows with priority > targetPriority
+      if (targetPriority > 0) {
+        await Microdrama.updateMany(
+          { priority: { $gt: targetPriority } },
+          { $inc: { priority: -1 } }
+        );
+      }
+
+      return res.json({
+        success: true,
+        message:
+          "Microdrama deleted successfully",
+      });
+
+    } catch (error) {
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Failed to delete microdrama",
+      });
+    }
+  };
+
+
+// ========================================
+// SEARCH
+// ========================================
+
+const searchMicrodramas =
+  async (req, res) => {
+    try {
+
+      const { q } = req.query;
+
+      const dramas =
+        await Microdrama.find({
+          title: {
+            $regex: q,
+            $options: "i",
+          },
+        });
+
+      return res.json({
+        success: true,
+        results: dramas,
+      });
+
+    } catch (error) {
+
+      return res.status(500).json({
+        success: false,
+        message:
+          "Search failed",
+      });
+    }
+  };
+
+
+module.exports = {
+  addMicrodrama,
+  getAllMicrodramas,
+  getMicrodramaById,
+  updateMicrodrama,
+  deleteMicrodrama,
+  searchMicrodramas,
+};

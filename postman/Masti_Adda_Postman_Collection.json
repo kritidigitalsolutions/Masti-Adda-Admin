@@ -1,0 +1,1682 @@
+{
+  "info": {
+    "_postman_id": "masti-adda-collection-v1",
+    "name": "Masti Adda OTT - Complete API Collection",
+    "description": "Complete Postman API Collection for Masti Adda backend. Directly import this file into Postman.\n\nPreconfigured variables:\n- baseUrl: http://localhost:5000\n- adminToken: automatically populated on Admin Login\n- userToken: automatically populated on Verify OTP",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Admin Auth",
+      "item": [
+        {
+          "name": "Admin Login (Auto-saves adminToken)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('adminToken', jsonData.token);",
+                  "    console.log('adminToken saved successfully');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"prismmedianet1@gmail.com\",\n  \"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Admin Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Send Forgot Password OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"prismmedianet1@gmail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/auth/send-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "auth", "send-otp"]
+            }
+          }
+        },
+        {
+          "name": "Verify Forgot Password OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"prismmedianet1@gmail.com\",\n  \"otp\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/auth/verify-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "auth", "verify-otp"]
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"prismmedianet1@gmail.com\",\n  \"otp\": \"123456\",\n  \"newPassword\": \"newPassword123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "auth", "reset-password"]
+            }
+          }
+        },
+        {
+          "name": "Change Password (Authenticated)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"123456\",\n  \"newPassword\": \"newPassword123!\",\n  \"otp\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "auth", "change-password"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. User Auth",
+      "item": [
+        {
+          "name": "Send OTP (Mobile)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+919999999999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/send-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "send-otp"]
+            },
+            "description": "For testing: +919999999999 uses fixed dummy OTP '1234'"
+          }
+        },
+        {
+          "name": "Verify OTP (Auto-saves userToken)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set('userToken', jsonData.token);",
+                  "    console.log('userToken saved successfully');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+919999999999\",\n  \"otp\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify-otp"]
+            }
+          }
+        },
+        {
+          "name": "Google Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"PASTE_FIREBASE_GOOGLE_ID_TOKEN_HERE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/google-login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "google-login"]
+            }
+          }
+        },
+        {
+          "name": "Website Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{userToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/website-login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "website-login"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Admin - Movies",
+      "item": [
+        {
+          "name": "Get All Movies (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/movies?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "movies"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Movie By ID (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/movies/:movieId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "movies", ":movieId"],
+              "variable": [{ "key": "movieId", "value": "PASTE_MOVIE_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Add Movie (JSON / URLs)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Sample Action Movie\",\n  \"description\": \"An exciting action movie description\",\n  \"genre\": \"[\\\"Action\\\", \\\"Thriller\\\"]\",\n  \"category\": \"[\\\"Trending\\\", \\\"Bollywood\\\"]\",\n  \"releaseYear\": 2024,\n  \"duration\": \"120 mins\",\n  \"language\": \"Hindi\",\n  \"poster\": \"https://placehold.co/400x600.png\",\n  \"banner\": \"https://placehold.co/1200x600.png\",\n  \"trailerUrl\": \"https://www.youtube.com/watch?v=YoHD9XEInc0\",\n  \"videoUrl\": \"https://vz-3689aab6-c39.b-cdn.net/example/playlist.m3u8\",\n  \"isComingSoon\": \"false\",\n  \"priority\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/movies/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "movies", "add"]
+            }
+          }
+        },
+        {
+          "name": "Update Movie (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Movie Title\",\n  \"description\": \"Updated description\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/movies/:movieId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "movies", ":movieId"],
+              "variable": [{ "key": "movieId", "value": "PASTE_MOVIE_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Delete Movie (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/movies/:movieId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "movies", ":movieId"],
+              "variable": [{ "key": "movieId", "value": "PASTE_MOVIE_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Search Movies (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/movies/search?query=Action",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "movies", "search"],
+              "query": [{ "key": "query", "value": "Action" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Admin - Series & Episodes",
+      "item": [
+        {
+          "name": "Get All Series (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/series?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "series"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Series",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Dark Detective Series\",\n  \"description\": \"A crime thriller web series.\",\n  \"genre\": \"[\\\"Crime\\\", \\\"Mystery\\\"]\",\n  \"category\": \"[\\\"Web Series\\\"]\",\n  \"language\": \"Hindi\",\n  \"poster\": \"https://placehold.co/400x600.png\",\n  \"banner\": \"https://placehold.co/1200x600.png\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/series/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "series", "add"]
+            }
+          }
+        },
+        {
+          "name": "Get Episodes By Series",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/episodes/:seriesId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "episodes", ":seriesId"],
+              "variable": [{ "key": "seriesId", "value": "PASTE_SERIES_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Add Episode to Series",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"seriesId\": \"PASTE_SERIES_ID_HERE\",\n  \"title\": \"Episode 1: The Disappearance\",\n  \"episodeNumber\": 1,\n  \"seasonNumber\": 1,\n  \"description\": \"First episode of the series\",\n  \"duration\": \"40 mins\",\n  \"videoUrl\": \"https://vz-3689aab6-c39.b-cdn.net/example/playlist.m3u8\",\n  \"poster\": \"https://placehold.co/400x600.png\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/episodes/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "episodes", "add"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Admin - Microdramas",
+      "item": [
+        {
+          "name": "Get All Microdramas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/microdramas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "microdramas"]
+            }
+          }
+        },
+        {
+          "name": "Add Microdrama",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Billionaire In Disguise\",\n  \"description\": \"A vertical bite-sized drama.\",\n  \"genre\": \"[\\\"Romance\\\", \\\"Drama\\\"]\",\n  \"poster\": \"https://placehold.co/400x600.png\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/microdramas/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "microdramas", "add"]
+            }
+          }
+        },
+        {
+          "name": "Get Microdrama Episodes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/microdramas-episodes/:microdramaId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "microdramas-episodes", ":microdramaId"],
+              "variable": [{ "key": "microdramaId", "value": "PASTE_MICRODRAMA_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Add Microdrama Episode",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"microdramaId\": \"PASTE_MICRODRAMA_ID_HERE\",\n  \"title\": \"Episode 1\",\n  \"episodeNumber\": 1,\n  \"videoUrl\": \"https://vz-3689aab6-c39.b-cdn.net/example/playlist.m3u8\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/microdramas-episodes/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "microdramas-episodes", "add"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Admin - Categories, Plans & Promos",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Top 10 Blockbusters\",\n  \"type\": \"movies\",\n  \"sortOrder\": 1,\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Get All Plans (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/plan",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "plan"]
+            }
+          }
+        },
+        {
+          "name": "Create Subscription Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Premium Annual\",\n  \"price\": 999,\n  \"duration\": 365,\n  \"planType\": \"yearly\",\n  \"features\": [\"Ultra HD 4K\", \"No Ads\", \"4 Devices\"],\n  \"isRecommended\": true,\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/plan",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "plan"]
+            }
+          }
+        },
+        {
+          "name": "Get All Promos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/promo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "promo"]
+            }
+          }
+        },
+        {
+          "name": "Create Promo Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"WELCOME50\",\n  \"discountType\": \"percentage\",\n  \"discountValue\": 50,\n  \"maxUses\": 500,\n  \"expiryDate\": \"2027-12-31T23:59:59.000Z\",\n  \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/promo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "promo"]
+            }
+          }
+        },
+        {
+          "name": "Get All Vouchers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/voucher",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "voucher"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. User - Public Content Browsing",
+      "item": [
+        {
+          "name": "Get Movies (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/movies?page=1&limit=12",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movies"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "12" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Movie Details By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/movies/:movieId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "movies", ":movieId"],
+              "variable": [{ "key": "movieId", "value": "PASTE_MOVIE_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Get Series (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/series?page=1&limit=12",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "series"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "12" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Series Episodes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/episodes/:seriesId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "episodes", ":seriesId"],
+              "variable": [{ "key": "seriesId", "value": "PASTE_SERIES_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Get Microdramas (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/microdramas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "microdramas"]
+            }
+          }
+        },
+        {
+          "name": "Get AI Reels",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/ai-reels",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ai-reels"]
+            }
+          }
+        },
+        {
+          "name": "Get Home Banners",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/home-banners",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "home-banners"]
+            }
+          }
+        },
+        {
+          "name": "Get Categories (User)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. User - Watch Progress & Continue Watching",
+      "item": [
+        {
+          "name": "Save Watch Progress",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contentId\": \"PASTE_CONTENT_ID_HERE\",\n  \"contentType\": \"movie\",\n  \"progressSeconds\": 250,\n  \"durationSeconds\": 7200,\n  \"completed\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/continue-watching",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "continue-watching"]
+            }
+          }
+        },
+        {
+          "name": "Get Continue Watching List",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/continue-watching",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "continue-watching"]
+            }
+          }
+        },
+        {
+          "name": "Get Progress By Content ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/continue-watching/progress/:contentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "continue-watching", "progress", ":contentId"],
+              "variable": [{ "key": "contentId", "value": "PASTE_CONTENT_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Mark Watch Progress Completed",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/continue-watching/complete/:progressId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "continue-watching", "complete", ":progressId"],
+              "variable": [{ "key": "progressId", "value": "PASTE_PROGRESS_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Remove from Continue Watching",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/continue-watching/:progressId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "continue-watching", ":progressId"],
+              "variable": [{ "key": "progressId", "value": "PASTE_PROGRESS_ID_HERE" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. User - Watchlist",
+      "item": [
+        {
+          "name": "Get Watchlist",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/watchlist",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "watchlist"]
+            }
+          }
+        },
+        {
+          "name": "Add to Watchlist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemId\": \"PASTE_CONTENT_ID_HERE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/watchlist",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "watchlist"]
+            }
+          }
+        },
+        {
+          "name": "Remove from Watchlist",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/watchlist/:watchlistId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "watchlist", ":watchlistId"],
+              "variable": [{ "key": "watchlistId", "value": "PASTE_WATCHLIST_ITEM_ID_HERE" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. User - Interactions (Like, Dislike, Follow, Bookmark)",
+      "item": [
+        {
+          "name": "Toggle Like",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/interaction/toggle/like/:contentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "interaction", "toggle", "like", ":contentId"],
+              "variable": [{ "key": "contentId", "value": "PASTE_CONTENT_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Toggle Dislike",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/interaction/toggle/dislike/:contentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "interaction", "toggle", "dislike", ":contentId"],
+              "variable": [{ "key": "contentId", "value": "PASTE_CONTENT_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Toggle Follow User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/interaction/toggle/follow/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "interaction", "toggle", "follow", ":userId"],
+              "variable": [{ "key": "userId", "value": "PASTE_USER_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Get Content Interaction Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/interaction/stats/:contentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "interaction", "stats", ":contentId"],
+              "variable": [{ "key": "contentId", "value": "PASTE_CONTENT_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Toggle Bookmark",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/interaction/toggle/bookmark/:contentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "interaction", "toggle", "bookmark", ":contentId"],
+              "variable": [{ "key": "contentId", "value": "PASTE_CONTENT_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Get Bookmarks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/interaction/bookmarks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "interaction", "bookmarks"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. User - Comments",
+      "item": [
+        {
+          "name": "Get Comments for Content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/:contentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comments", ":contentId"],
+              "variable": [{ "key": "contentId", "value": "PASTE_CONTENT_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Post a Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"This was an incredible watch!\",\n  \"contentType\": \"movie\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/:contentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comments", ":contentId"],
+              "variable": [{ "key": "contentId", "value": "PASTE_CONTENT_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Get My Comments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/user/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comments", "user", "me"]
+            }
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/:commentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comments", ":commentId"],
+              "variable": [{ "key": "commentId", "value": "PASTE_COMMENT_ID_HERE" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Plans, Promo, Voucher & Payment (SabPaisa)",
+      "item": [
+        {
+          "name": "Get Available Plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "plans"]
+            }
+          }
+        },
+        {
+          "name": "Apply Promo Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"WELCOME50\",\n  \"planId\": \"PASTE_PLAN_ID_HERE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/promo/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "promo", "apply"]
+            }
+          }
+        },
+        {
+          "name": "Redeem Voucher",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"VOUCHER-XXXX\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/voucher/redeem",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "voucher", "redeem"]
+            }
+          }
+        },
+        {
+          "name": "Initiate SabPaisa Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"PASTE_PLAN_ID_HERE\",\n  \"promoCode\": \"WELCOME50\",\n  \"userName\": \"Test User\",\n  \"userEmail\": \"testuser@gmail.com\",\n  \"userContact\": \"9999999999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payment/initiate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payment", "initiate"]
+            }
+          }
+        },
+        {
+          "name": "Check Payment Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/payment/status/:clientTxnId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payment", "status", ":clientTxnId"],
+              "variable": [{ "key": "clientTxnId", "value": "PASTE_CLIENT_TXN_ID_HERE" }]
+            }
+          }
+        },
+        {
+          "name": "Get User Subscription Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "subscription"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. User - Profile & Settings",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User Updated\",\n  \"email\": \"testuser@gmail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/update-profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "update-profile"]
+            }
+          }
+        },
+        {
+          "name": "Save FCM Token",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fcmToken\": \"SAMPLE_FCM_DEVICE_TOKEN_STRING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/fcm-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "fcm-token"]
+            }
+          }
+        },
+        {
+          "name": "Get Notification Settings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notification-settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notification-settings"]
+            }
+          }
+        },
+        {
+          "name": "Update Notification Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pushEnabled\": true,\n  \"emailEnabled\": true,\n  \"promotions\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notification-settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notification-settings"]
+            }
+          }
+        },
+        {
+          "name": "Get User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "14. Support, Legal & Company Info",
+      "item": [
+        {
+          "name": "Get Company Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/companyInfo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "companyInfo"]
+            }
+          }
+        },
+        {
+          "name": "Get Legal Pages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/legal",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "legal"]
+            }
+          }
+        },
+        {
+          "name": "Get FAQs / Help",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/help",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "help"]
+            }
+          }
+        },
+        {
+          "name": "Submit Support Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"testuser@gmail.com\",\n  \"subject\": \"Issue with video playback\",\n  \"message\": \"Video player buffering on episode 1.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/support",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "support"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,713 @@
+const fs = require("fs/promises");
+const https = require("https");
+const path = require("path");
+
+const normalizeBaseUrl = (value) =>
+  String(value || "")
+    .trim()
+    .replace(/\/+$/, "");
+
+const normalizeStorageHost = (value) => {
+  if (!value) {
+    return "storage.bunnycdn.com";
+  }
+
+  return String(value)
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/+$/, "");
+};
+
+const getStorageHosts = (storageHost) => {
+  return [
+    ...new Set(
+      [
+        normalizeStorageHost(storageHost),
+        "storage.bunnycdn.com",
+      ].filter(Boolean)
+    ),
+  ];
+};
+
+const encodePathPart = (part) => {
+  try {
+    return encodeURIComponent(decodeURIComponent(part));
+  } catch {
+    return encodeURIComponent(part);
+  }
+};
+
+const sanitizeRemotePath = (remotePath) => {
+  const normalized = String(remotePath || "")
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "");
+
+  const parts = normalized.split("/").filter(Boolean);
+
+  if (!parts.length) {
+    throw new Error("Bunny remote path cannot be empty");
+  }
+
+  if (parts.some((part) => part === "." || part === "..")) {
+    throw new Error("Invalid Bunny remote path");
+  }
+
+  return parts.map(encodePathPart).join("/");
+};
+
+/**
+ * Get Bunny configuration.
+ */
+const getConfig = () => {
+  const storageZone = String(
+    process.env.BUNNY_STORAGE_ZONE || ""
+  ).trim();
+
+  const accessKey = String(
+    process.env.BUNNY_ACCESS_KEY || ""
+  ).trim();
+
+  const storageHost = normalizeStorageHost(
+    process.env.BUNNY_STORAGE_HOST
+  );
+
+  const cdnUrl = normalizeBaseUrl(
+    process.env.BUNNY_CDN_URL
+  );
+
+  const missing = [];
+
+  if (!storageZone) {
+    missing.push("BUNNY_STORAGE_ZONE");
+  }
+
+  if (!accessKey) {
+    missing.push("BUNNY_ACCESS_KEY");
+  }
+
+  if (!cdnUrl) {
+    missing.push("BUNNY_CDN_URL");
+  }
+
+  if (missing.length) {
+    throw new Error(
+      `Missing Bunny environment variables: ${missing.join(", ")}`
+    );
+  }
+
+  return {
+    storageZone,
+    accessKey,
+    storageHost,
+    storageHosts: getStorageHosts(storageHost),
+    cdnUrl,
+  };
+};
+
+/**
+ * Build public CDN URL.
+ */
+const buildPublicUrl = (remotePath) => {
+  const { cdnUrl } = getConfig();
+
+  const safeRemotePath = sanitizeRemotePath(remotePath);
+
+  return `${cdnUrl}/${safeRemotePath}`;
+};
+
+/**
+ * Client-facing Bunny config, used by the admin panel
+ * to upload files directly from the browser straight to
+ * Bunny Storage (bypassing our own server for large files).
+ *
+ * NOTE: This intentionally exposes the storage AccessKey to
+ * any authenticated admin. Only call this behind isAdmin.
+ */
+const getClientUploadConfig = () => {
+  const {
+    storageZone,
+    accessKey,
+    storageHosts,
+    cdnUrl,
+  } = getConfig();
+
+  const stream = getStreamConfig();
+
+  return {
+    storageZone,
+    accessKey,
+    storageHosts,
+    cdnUrl,
+    stream: {
+      libraryId: stream.libraryId,
+      pullZone: stream.pullZone,
+      pullZoneUrl: stream.pullZoneUrl,
+    },
+  };
+};
+
+/**
+ * Upload stream using Node HTTPS.
+ */
+const uploadStreamRequest = ({
+  stream,
+  uploadUrl,
+  headers,
+  timeoutMs = 30 * 60 * 1000,
+}) => {
+  return new Promise((resolve, reject) => {
+    const req = https.request(
+      uploadUrl,
+      {
+        method: "PUT",
+        headers,
+        timeout: timeoutMs,
+      },
+      (res) => {
+        let body = "";
+
+        res.setEncoding("utf8");
+
+        res.on("data", (chunk) => {
+          body += chunk;
+        });
+
+        res.on("end", () => {
+          resolve({
+            ok: res.statusCode >= 200 && res.statusCode < 300,
+            status: res.statusCode,
+            statusText: res.statusMessage,
+            body,
+          });
+        });
+      }
+    );
+
+    req.on("timeout", () => {
+      req.destroy(
+        new Error("Bunny upload timed out")
+      );
+    });
+
+    req.on("error", reject);
+
+    stream.on("error", reject);
+
+    stream.pipe(req);
+  });
+};
+
+/**
+ * Upload stream to Bunny Storage.
+ *
+ * This is the main function used by multer.
+ */
+const uploadStreamToBunny = async ({
+  stream,
+  remotePath,
+  contentType = "application/octet-stream",
+  contentLength,
+}) => {
+  if (!stream) {
+    throw new Error("Bunny upload stream is required");
+  }
+
+  const {
+    storageZone,
+    accessKey,
+    storageHosts,
+  } = getConfig();
+
+  const safeRemotePath =
+    sanitizeRemotePath(remotePath);
+
+  const headers = {
+    AccessKey: accessKey,
+    "Content-Type": contentType,
+  };
+
+  if (contentLength) {
+    headers["Content-Length"] =
+      String(contentLength);
+  }
+
+  let lastError = null;
+
+  for (const host of storageHosts) {
+    const uploadUrl =
+      `https://${host}/${storageZone}/${safeRemotePath}`;
+
+    try {
+      console.log(
+        `Uploading to Bunny: ${uploadUrl}`
+      );
+
+      const response =
+        await uploadStreamRequest({
+          stream,
+          uploadUrl,
+          headers,
+        });
+
+      if (response.ok) {
+        return {
+          path: safeRemotePath,
+          url: buildPublicUrl(safeRemotePath),
+        };
+      }
+
+      const errorMessage =
+        response.body ||
+        response.statusText ||
+        `HTTP ${response.status}`;
+
+      lastError = new Error(
+        `Bunny upload failed (${response.status}): ${errorMessage}`
+      );
+
+      if (response.status !== 401) {
+        throw lastError;
+      }
+    } catch (error) {
+      lastError = error;
+      throw lastError;
+    }
+  }
+
+  throw (
+    lastError ||
+    new Error("Bunny upload failed")
+  );
+};
+
+/**
+ * Upload Buffer.
+ */
+const uploadBufferToBunny = async ({
+  buffer,
+  remotePath,
+  contentType = "application/octet-stream",
+}) => {
+  if (!Buffer.isBuffer(buffer)) {
+    throw new Error(
+      "Bunny upload buffer is required"
+    );
+  }
+
+  const {
+    storageZone,
+    accessKey,
+    storageHosts,
+  } = getConfig();
+
+  const safeRemotePath =
+    sanitizeRemotePath(remotePath);
+
+  const uploadUrl =
+    `https://${storageHosts[0]}/${storageZone}/${safeRemotePath}`;
+
+  const response = await fetch(uploadUrl, {
+    method: "PUT",
+
+    headers: {
+      AccessKey: accessKey,
+      "Content-Type": contentType,
+      "Content-Length": String(buffer.length),
+    },
+
+    body: buffer,
+  });
+
+  if (!response.ok) {
+    const message =
+      await response.text().catch(() => "");
+
+    throw new Error(
+      `Bunny upload failed (${response.status}): ${
+        message || response.statusText
+      }`
+    );
+  }
+
+  return {
+    path: safeRemotePath,
+    url: buildPublicUrl(safeRemotePath),
+  };
+};
+
+/**
+ * Upload existing local file to Bunny.
+ */
+const uploadFileToBunny = async ({
+  filePath,
+  remotePath,
+  contentType,
+}) => {
+  const buffer =
+    await fs.readFile(filePath);
+
+  return uploadBufferToBunny({
+    buffer,
+    remotePath,
+    contentType,
+  });
+};
+
+/**
+ * Upload multer file to Bunny.
+ */
+const uploadMulterFileToBunny = async (
+  file,
+  remoteFolder = ""
+) => {
+  if (!file) {
+    return null;
+  }
+
+  const fileName =
+    file.filename ||
+    `${Date.now()}-${file.originalname}`;
+
+  const remotePath = path.posix.join(
+    String(remoteFolder || "")
+      .replace(/\\/g, "/"),
+    fileName
+  );
+
+  if (file.buffer) {
+    return uploadBufferToBunny({
+      buffer: file.buffer,
+      remotePath,
+      contentType: file.mimetype,
+    });
+  }
+
+  return uploadFileToBunny({
+    filePath: file.path,
+    remotePath,
+    contentType: file.mimetype,
+  });
+};
+
+/**
+ * Get Bunny Stream configuration.
+ */
+const getStreamConfig = () => {
+  const libraryId = String(
+    process.env.BUNNY_STREAM_LIBRARY_ID || ""
+  ).trim();
+
+  const apiKey = String(
+    process.env.BUNNY_STREAM_API_KEY || ""
+  ).trim();
+
+  const rawPullZone = String(
+    process.env.BUNNY_STREAM_PULL_ZONE || ""
+  ).trim();
+
+  let pullZone = rawPullZone.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+  let pullZoneUrl = "";
+
+  if (pullZone) {
+    if (pullZone.includes(".b-cdn.net")) {
+      pullZoneUrl = `https://${pullZone}`;
+    } else {
+      pullZoneUrl = `https://${pullZone}.b-cdn.net`;
+    }
+  }
+
+  const collections = {
+    movies: String(process.env.BUNNY_STREAM_COLLECTION_MOVIES || "").trim(),
+    series: String(process.env.BUNNY_STREAM_COLLECTION_SERIES || "").trim(),
+    microdramas: String(process.env.BUNNY_STREAM_COLLECTION_MICRODRAMAS || "").trim(),
+    aireels: String(process.env.BUNNY_STREAM_COLLECTION_AIREELS || "").trim(),
+  };
+
+  return {
+    libraryId,
+    apiKey,
+    pullZone,
+    pullZoneUrl,
+    collections,
+  };
+};
+
+/**
+ * Generate playback, thumbnail, and embed URLs for a Bunny Stream video guid.
+ */
+const getBunnyStreamPlayUrls = (videoGuid) => {
+  const { libraryId, pullZoneUrl } = getStreamConfig();
+
+  if (!videoGuid) return null;
+
+  return {
+    guid: videoGuid,
+    hlsUrl: pullZoneUrl ? `${pullZoneUrl}/${videoGuid}/playlist.m3u8` : "",
+    thumbnailUrl: pullZoneUrl ? `${pullZoneUrl}/${videoGuid}/thumbnail.jpg` : "",
+    previewUrl: pullZoneUrl ? `${pullZoneUrl}/${videoGuid}/preview.webp` : "",
+    embedUrl: libraryId ? `https://iframe.mediadelivery.net/embed/${libraryId}/${videoGuid}` : "",
+  };
+};
+
+/**
+ * Create a new video entry in Bunny Stream Library.
+ */
+const createBunnyStreamVideo = async (title, collectionId = "") => {
+  const { libraryId, apiKey } = getStreamConfig();
+
+  if (!libraryId || !apiKey) {
+    throw new Error("Bunny Stream credentials not configured (BUNNY_STREAM_LIBRARY_ID / BUNNY_STREAM_API_KEY)");
+  }
+
+  const payload = {
+    title: title || `Video-${Date.now()}`,
+  };
+
+  if (collectionId) {
+    payload.collectionId = collectionId;
+  }
+
+  const response = await fetch(`https://video.bunnycdn.com/library/${libraryId}/videos`, {
+    method: "POST",
+    headers: {
+      AccessKey: apiKey,
+      "Content-Type": "application/json",
+      accept: "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => "");
+    throw new Error(`Failed to create Bunny Stream video (${response.status}): ${errText}`);
+  }
+
+  return response.json();
+};
+
+/**
+ * Streams directly from a readable stream to Bunny Stream video GUID using HTTPS request.
+ * Avoids buffering large video files in server memory.
+ */
+const uploadStreamToBunnyVideo = ({
+  stream,
+  videoGuid,
+  contentType = "application/octet-stream",
+  contentLength,
+  timeoutMs = 60 * 60 * 1000,
+}) => {
+  return new Promise((resolve, reject) => {
+    const { libraryId, apiKey } = getStreamConfig();
+
+    if (!libraryId || !apiKey) {
+      return reject(new Error("Bunny Stream credentials not configured"));
+    }
+
+    if (!videoGuid) {
+      return reject(new Error("Video GUID is required for Bunny Stream upload"));
+    }
+
+    const headers = {
+      AccessKey: apiKey,
+      "Content-Type": contentType,
+    };
+
+    if (contentLength) {
+      headers["Content-Length"] = String(contentLength);
+    }
+
+    const uploadUrl = `https://video.bunnycdn.com/library/${libraryId}/videos/${videoGuid}`;
+
+    const req = https.request(
+      uploadUrl,
+      {
+        method: "PUT",
+        headers,
+        timeout: timeoutMs,
+      },
+      (res) => {
+        let body = "";
+        res.setEncoding("utf8");
+
+        res.on("data", (chunk) => {
+          body += chunk;
+        });
+
+        res.on("end", () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            const playUrls = getBunnyStreamPlayUrls(videoGuid);
+            resolve({
+              success: true,
+              guid: videoGuid,
+              ...playUrls,
+            });
+          } else {
+            const errorMessage = body || res.statusMessage || `HTTP ${res.statusCode}`;
+            reject(new Error(`Bunny Stream upload failed (${res.statusCode}): ${errorMessage}`));
+          }
+        });
+      }
+    );
+
+    req.on("timeout", () => {
+      req.destroy(new Error("Bunny Stream upload timed out"));
+    });
+
+    req.on("error", reject);
+    stream.on("error", reject);
+
+    stream.pipe(req);
+  });
+};
+
+/**
+ * Upload video buffer or stream directly to Bunny Stream video GUID.
+ */
+const uploadVideoToBunnyStream = async ({
+  buffer,
+  filePath,
+  title,
+  collectionId,
+}) => {
+  const { libraryId, apiKey } = getStreamConfig();
+  const videoData = await createBunnyStreamVideo(title, collectionId);
+  const videoGuid = videoData.guid;
+
+  let fileBuffer = buffer;
+  if (!fileBuffer && filePath) {
+    fileBuffer = await fs.readFile(filePath);
+  }
+
+  if (!fileBuffer) {
+    throw new Error("File buffer or filePath is required for Bunny Stream upload");
+  }
+
+  const uploadUrl = `https://video.bunnycdn.com/library/${libraryId}/videos/${videoGuid}`;
+  const response = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: {
+      AccessKey: apiKey,
+      "Content-Type": "application/octet-stream",
+    },
+    body: fileBuffer,
+  });
+
+  if (!response.ok) {
+    const errText = await response.text().catch(() => "");
+    throw new Error(`Failed to upload to Bunny Stream (${response.status}): ${errText}`);
+  }
+
+  const playUrls = getBunnyStreamPlayUrls(videoGuid);
+
+  return {
+    success: true,
+    guid: videoGuid,
+    ...playUrls,
+  };
+};
+
+/**
+ * Delete a video from Bunny Stream.
+ */
+const deleteFromBunnyStream = async (videoGuid) => {
+  const { libraryId, apiKey } = getStreamConfig();
+  if (!libraryId || !apiKey || !videoGuid) return false;
+
+  const response = await fetch(`https://video.bunnycdn.com/library/${libraryId}/videos/${videoGuid}`, {
+    method: "DELETE",
+    headers: {
+      AccessKey: apiKey,
+      accept: "application/json",
+    },
+  });
+
+  return response.ok;
+};
+
+/**
+ * Fetch Bunny Stream video details/status.
+ */
+const getBunnyStreamVideo = async (videoGuid) => {
+  const { libraryId, apiKey } = getStreamConfig();
+  if (!libraryId || !apiKey || !videoGuid) return null;
+
+  const response = await fetch(`https://video.bunnycdn.com/library/${libraryId}/videos/${videoGuid}`, {
+    method: "GET",
+    headers: {
+      AccessKey: apiKey,
+      accept: "application/json",
+    },
+  });
+
+  if (!response.ok) return null;
+  return response.json();
+};
+
+/**
+ * Delete file from Bunny (Storage or Stream).
+ */
+const deleteFromBunny = async (
+  remotePathOrUrl
+) => {
+  const {
+    storageZone,
+    accessKey,
+    storageHosts,
+    cdnUrl,
+  } = getConfig();
+
+  let remotePath =
+    String(remotePathOrUrl || "");
+
+  if (remotePath.startsWith(cdnUrl)) {
+    remotePath =
+      remotePath.slice(cdnUrl.length);
+  }
+
+  const safeRemotePath =
+    sanitizeRemotePath(remotePath);
+
+  const deleteUrl =
+    `https://${storageHosts[0]}/${storageZone}/${safeRemotePath}`;
+
+  const response = await fetch(deleteUrl, {
+    method: "DELETE",
+
+    headers: {
+      AccessKey: accessKey,
+    },
+  });
+
+  if (
+    !response.ok &&
+    response.status !== 404
+  ) {
+    const message =
+      await response.text().catch(() => "");
+
+    throw new Error(
+      `Bunny delete failed (${response.status}): ${
+        message || response.statusText
+      }`
+    );
+  }
+
+  return true;
+};
+
+module.exports = {
+  buildPublicUrl,
+  deleteFromBunny,
+  deleteFromBunnyStream,
+  getClientUploadConfig,
+  getStreamConfig,
+  getBunnyStreamPlayUrls,
+  createBunnyStreamVideo,
+  uploadVideoToBunnyStream,
+  uploadStreamToBunnyVideo,
+  getBunnyStreamVideo,
+  uploadBufferToBunny,
+  uploadFileToBunny,
+  uploadMulterFileToBunny,
+  uploadStreamToBunny,
+};
