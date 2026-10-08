@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config({ path: __dirname + "/../.env" });
 
 const BASE_URL = `http://localhost:${process.env.PORT || 5000}`;
-const JWT_SECRET = process.env.JWT_SECRET || "golidoliappsecret";
+const JWT_SECRET = process.env.JWT_SECRET || "mastiaddasecret";
 
 async function runTests() {
   console.log("=== Testing POST /api/auth/website-login ===");

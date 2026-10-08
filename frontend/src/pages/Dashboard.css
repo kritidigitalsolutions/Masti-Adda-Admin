@@ -425,17 +425,17 @@ body.light .segmented-switch-btn:hover:not(.active) {
 
 .segmented-switch-btn.active,
 body.light .segmented-switch-btn.active {
-  color: #ffffff !important;
+  color: #000000 !important;
   font-weight: 700 !important;
 }
 
 .segmented-switch-active-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #FF6A00 0%, #FF2A6D 100%) !important;
+  background: #FFD11A !important;
   border-radius: 9999px;
   z-index: 1;
-  box-shadow: 0 2px 10px rgba(255, 42, 109, 0.35) !important;
+  box-shadow: 0 2px 6px rgba(255, 209, 26, 0.35) !important;
 }
 
 .segmented-switch-btn-text {

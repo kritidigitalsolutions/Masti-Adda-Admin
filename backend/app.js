@@ -40,7 +40,7 @@ const adminUrls = process.env.ADMIN_URL
 
 const defaultAllowed = [
   "http://localhost:5173",
-  "https://masti-adda-admin-ujg8.vercel.app"
+  "https://admin.mastiadda.in"
 ];
 
 const allowedOrigins = [...new Set([...frontendUrls, ...adminUrls, ...defaultAllowed])];
@@ -59,9 +59,9 @@ const corsOptions = {
 
     // Dynamic pattern matching for development / Vercel preview environments
     const isLocalhost = origin.includes("localhost") || origin.includes("127.0.0.1") || origin.includes("192.168");
-    const isGolidoliDomain = origin.endsWith(".vercel.app") && (origin.includes("golidoli") || origin.includes("sigma"));
+    const isMastiAddaDomain = origin.endsWith(".vercel.app") && (origin.includes("masti-adda") || origin.includes("sigma"));
 
-    if (isLocalhost || isGolidoliDomain) {
+    if (isLocalhost || isMastiAddaDomain) {
       return callback(null, true);
     }
 

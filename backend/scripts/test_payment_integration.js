@@ -18,7 +18,7 @@ async function runFullIntegrationTest() {
   // Find or create test user and plan
   let testUser = await User.findOne();
   if (!testUser) {
-    testUser = await User.create({ name: 'Test User', email: 'test_sabpaisa@golidoli.com', phone: '9876543210', role: 'USER' });
+    testUser = await User.create({ name: 'Test User', email: 'test_sabpaisa@mastiadda.com', phone: '9876543210', role: 'USER' });
   }
 
   let testPlan = await Plan.findOne();
@@ -64,7 +64,7 @@ async function runFullIntegrationTest() {
   let initStatus = 0;
   let initData = null;
   const initReq = {
-    body: { planId, userName: 'Test User', userEmail: 'test@golidoli.com', userContact: '9876543210' },
+    body: { planId, userName: 'Test User', userEmail: 'test@mastiadda.com', userContact: '9999999999' },
     user: { id: userId, role: 'USER' }
   };
   const initRes = {

@@ -25,6 +25,7 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
@@ -686,11 +687,10 @@ export default function PlansPage() {
           </div>
         )}
 
-        {/* Toolbar Row */}
-        <div className="plans-toolbar">
-          {/* Left: Search & Filter Segmented Switch */}
-          <div className="plans-toolbar-left">
-            {/* Search Field */}
+        {/* ── Toolbar Section ── */}
+        <div className="plans-toolbar-wrapper">
+          {/* Top Row: Search (Left) & View Toggle + Exports (Right) */}
+          <div className="plans-toolbar-row plans-toolbar-top-row">
             <div className="search-field" style={{ padding: "7px 12px" }}>
               <Search size={15} style={{ color: "var(--text-muted)" }} />
               <input
@@ -710,13 +710,59 @@ export default function PlansPage() {
                     cursor: "pointer",
                     padding: 0,
                   }}
+                  title="Clear search"
                 >
                   <X size={14} />
                 </button>
               )}
             </div>
 
-            {/* Segmented Filter Switch */}
+            <div className="plans-toolbar-actions">
+              {/* View Mode Switcher: Cards vs Table */}
+              <div className="plans-view-toggle">
+                <button
+                  type="button"
+                  className={`plans-view-btn ${viewMode === "cards" ? "active" : ""}`}
+                  onClick={() => setViewMode("cards")}
+                  title="Card Grid View"
+                >
+                  <LayoutGrid size={14} />
+                  <span>Cards</span>
+                </button>
+                <button
+                  type="button"
+                  className={`plans-view-btn ${viewMode === "table" ? "active" : ""}`}
+                  onClick={() => setViewMode("table")}
+                  title="Data Table View"
+                >
+                  <ListFilter size={14} />
+                  <span>Table</span>
+                </button>
+              </div>
+
+              {/* Export Buttons */}
+              <button
+                onClick={handleExportExcel}
+                className="btn btn-ghost"
+                title="Export to Excel"
+              >
+                <FileSpreadsheet size={15} style={{ color: "#10b981" }} />
+                <span>Excel</span>
+              </button>
+              <button
+                onClick={handleExportPDF}
+                className="btn btn-ghost"
+                title="Export to PDF"
+              >
+                <FileText size={15} style={{ color: "#FF0F8A" }} />
+                <span>PDF</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Bottom Row: Plans Bar (Segmented Filter, Left) & Sort Dropdown (Right) */}
+          <div className="plans-toolbar-row plans-toolbar-filter-row">
+            {/* Segmented Filter Switch (Plans Bar) */}
             <div className="segmented-switch">
               {[
                 { value: "all", label: "All Plans" },
@@ -742,65 +788,28 @@ export default function PlansPage() {
                 </button>
               ))}
             </div>
-          </div>
 
-          {/* Right: Sort, View Toggle & Export Utilities */}
-          <div className="plans-toolbar-right">
-            {/* Sort Dropdown */}
-            <select
-              className="plans-sort-select"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              title="Sort subscription plans"
-            >
-              <option value="recommended">⭐ Recommended First</option>
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
-              <option value="duration_asc">Duration: Shortest</option>
-              <option value="duration_desc">Duration: Longest</option>
-              <option value="order">Display Order (#)</option>
-              <option value="name">Name (A - Z)</option>
-            </select>
-
-            {/* View Mode Switcher: Cards vs Table */}
-            <div className="plans-view-toggle">
-              <button
-                type="button"
-                className={`plans-view-btn ${viewMode === "cards" ? "active" : ""}`}
-                onClick={() => setViewMode("cards")}
-                title="Card Grid View"
-              >
-                <LayoutGrid size={14} />
-                <span>Cards</span>
-              </button>
-              <button
-                type="button"
-                className={`plans-view-btn ${viewMode === "table" ? "active" : ""}`}
-                onClick={() => setViewMode("table")}
-                title="Data Table View"
-              >
-                <ListFilter size={14} />
-                <span>Table</span>
-              </button>
+            {/* Sort Dropdown Group */}
+            <div className="plans-sort-group">
+              <span className="plans-sort-label">Sort:</span>
+              <div className="plans-sort-wrapper">
+                <select
+                  className="plans-sort-select"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  title="Sort subscription plans"
+                >
+                  <option value="recommended">⭐ Recommended First</option>
+                  <option value="price_asc">Price: Low to High</option>
+                  <option value="price_desc">Price: High to Low</option>
+                  <option value="duration_asc">Duration: Shortest</option>
+                  <option value="duration_desc">Duration: Longest</option>
+                  <option value="order">Display Order (#)</option>
+                  <option value="name">Name (A - Z)</option>
+                </select>
+                <ChevronDown size={14} className="plans-sort-icon" />
+              </div>
             </div>
-
-            {/* Export Buttons */}
-            <button
-              onClick={handleExportExcel}
-              className="btn btn-ghost"
-              title="Export to Excel"
-            >
-              <FileSpreadsheet size={15} style={{ color: "#10b981" }} />
-              <span>Excel</span>
-            </button>
-            <button
-              onClick={handleExportPDF}
-              className="btn btn-ghost"
-              title="Export to PDF"
-            >
-              <FileText size={15} style={{ color: "#FF0F8A" }} />
-              <span>PDF</span>
-            </button>
           </div>
         </div>
 

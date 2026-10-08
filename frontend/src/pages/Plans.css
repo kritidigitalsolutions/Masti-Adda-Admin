@@ -434,55 +434,140 @@ body.light .feature-suggestion-btn:hover:not(:disabled) {
 }
 
 /* ---------- Toolbar & Filter Enhancements ---------- */
-.plans-toolbar {
+.plans-toolbar-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.plans-toolbar-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 14px;
+  width: 100%;
 }
 
-.plans-toolbar-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 280px;
+.plans-toolbar-top-row {
   flex-wrap: wrap;
 }
 
-.plans-toolbar-right {
+.plans-toolbar-top-row .search-field {
+  max-width: 320px;
+  min-width: 240px;
+  flex: 1;
+}
+
+.plans-toolbar-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
-/* Sort Dropdown */
-.plans-sort-select {
-  height: 36px;
-  padding: 0 10px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
+/* Filter Row: Plans Bar on Left, Sort on Right */
+.plans-toolbar-filter-row {
+  flex-wrap: wrap;
+  padding-top: 2px;
+}
+
+.plans-toolbar-filter-row .segmented-switch {
+  flex-shrink: 0;
+}
+
+/* Sort Dropdown Group */
+.plans-sort-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.plans-sort-label {
   font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+body.light .plans-sort-label {
+  color: #64748b;
+}
+
+.plans-sort-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.plans-sort-select {
+  height: 38px;
+  padding: 0 34px 0 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  color: var(--text);
+  font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
   outline: none;
+  appearance: none;
+  -webkit-appearance: none;
   transition: all 0.2s ease;
+  min-width: 185px;
 }
 
-.plans-sort-select:hover,
+.plans-sort-select:hover {
+  border-color: rgba(255, 209, 26, 0.5);
+  background: var(--bg);
+}
+
 .plans-sort-select:focus {
-  border-color: var(--primary);
-  background: var(--bg3);
+  border-color: #FFD11A;
+  box-shadow: 0 0 0 3px rgba(255, 209, 26, 0.15);
+  background: var(--bg);
 }
 
 body.light .plans-sort-select {
-  background: #f8fafc;
+  background: #ffffff;
   border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+body.light .plans-sort-select:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+body.light .plans-sort-select:focus {
+  border-color: #FFD11A;
+  box-shadow: 0 0 0 3px rgba(255, 209, 26, 0.2);
+  background: #ffffff;
+}
+
+.plans-sort-icon {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+body.light .plans-sort-icon {
+  color: #64748b;
+}
+
+.plans-sort-wrapper:hover .plans-sort-icon,
+.plans-sort-select:focus + .plans-sort-icon {
+  color: var(--text);
+}
+
+body.light .plans-sort-wrapper:hover .plans-sort-icon,
+body.light .plans-sort-select:focus + .plans-sort-icon {
   color: #0f172a;
 }
 
@@ -902,16 +987,29 @@ body.light .bulk-delete-btn:hover {
   box-shadow: 0 0 0 3px var(--primary-dim, rgba(255, 209, 26, 0.12)) !important;
 }
 
-/* Plans toolbar search field - constrained width for layout balance */
-.plans-toolbar .search-field {
-  max-width: 280px;
-}
-
-@media (max-width: 768px) {
-  .plans-toolbar .search-field {
+@media (max-width: 860px) {
+  .plans-toolbar-top-row .search-field {
     max-width: 100%;
+    width: 100%;
   }
-  .plans-toolbar-left {
+  .plans-toolbar-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .plans-toolbar-filter-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .plans-sort-group {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+  .plans-sort-wrapper {
+    flex: 1;
+  }
+  .plans-sort-select {
     width: 100%;
   }
 }
