@@ -567,29 +567,31 @@ export default function Category() {
 
         {/* Categories Table */}
         <div className="tbl-wrap">
-          <table className="tbl tbl-categories" style={{ tableLayout: "fixed", minWidth: "760px" }}>
+          <table className="tbl tbl-categories">
             <thead>
               <tr>
-                <th style={{ width: '45px' }}>#</th>
-                <th style={{ width: '220px' }}>CATEGORY</th>
-                <th style={{ width: '160px' }}>SLUG</th>
-                <th style={{ width: '95px', textAlign: 'center' }}>PRIORITY</th>
-                <th style={{ width: '110px', textAlign: 'center' }}>STATUS</th>
-                <th style={{ width: '125px' }}>CREATED</th>
-                <th style={{ width: '150px', textAlign: 'center' }}>ACTIONS</th>
+                <th style={{ width: "36px", textAlign: "center" }}>#</th>
+                <th>Category</th>
+                <th>Slug</th>
+                <th style={{ textAlign: "center" }}>Priority</th>
+                <th style={{ textAlign: "center" }}>Status</th>
+                <th>Created</th>
+                <th style={{ width: "165px", minWidth: "165px", textAlign: "center", verticalAlign: "middle" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredCategories.map((c, index) => (
                 <React.Fragment key={c._id}>
                   <tr>
-                    <td style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{index + 1}</td>
+                    <td style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "0.8rem", fontWeight: 600 }}>
+                      {index + 1}
+                    </td>
                     <td>
                       <div className="user-cell">
                         <div className="cat-avatar">
                           {c.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="u-name" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
+                        <span className="u-name">{c.name}</span>
                       </div>
                     </td>
                     <td>
@@ -597,7 +599,7 @@ export default function Category() {
                         {c.slug}
                       </span>
                     </td>
-                    <td style={{ textAlign: 'center' }}>
+                    <td style={{ textAlign: "center" }}>
                       <input
                         key={`priority-${c._id}-${c.priority}`}
                         type="number"
@@ -611,16 +613,18 @@ export default function Category() {
                         title="Type & press Enter or Blur to save priority order"
                       />
                     </td>
-                    <td style={{ textAlign: 'center' }}>
-                      <span className={`badge badge-status-wrap ${c.isActive !== false ? "badge-active" : "badge-blocked"}`}>
+                    <td style={{ textAlign: "center" }}>
+                      <span className={`badge ${c.isActive !== false ? "badge-active" : "badge-blocked"}`}>
                         {c.isActive !== false ? "Active" : "Inactive"}
                       </span>
                     </td>
-                    <td style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{formatDate(c.createdAt)}</td>
-                    <td style={{ textAlign: 'center' }}>
-                      <div className="tbl-actions" style={{ justifyContent: "center", gap: "6px" }}>
+                    <td style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>
+                      {formatDate(c.createdAt)}
+                    </td>
+                    <td style={{ width: "165px", minWidth: "165px", textAlign: "center", verticalAlign: "middle", padding: "10px 8px" }}>
+                      <div className="tbl-actions" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px", flexWrap: "nowrap", margin: "0 auto", width: "100%" }}>
                         {/* Interactive Toggle Switch */}
-                        <div style={{ display: "flex", alignItems: "center", marginRight: "4px" }} title={c.isActive !== false ? "Click to Deactivate (Red)" : "Click to Activate (Green)"}>
+                        <div style={{ display: "inline-flex", alignItems: "center", marginRight: "2px", flexShrink: 0 }} title={c.isActive !== false ? "Click to Deactivate (Red)" : "Click to Activate (Green)"}>
                           <label className="switch-label">
                             <input
                               type="checkbox"

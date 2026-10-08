@@ -1212,15 +1212,22 @@ export default function Content() {
             </div>
             {loading ? <p>Loading...</p> : (
               <div className="tbl-wrap">
-                <table className="tbl">
+                <table className="tbl tbl-content">
                   <thead>
                     <tr>
-                      <th>Title</th><th>Type</th><th>Category</th><th>Year</th><th>Audience</th><th>Priority</th><th>Status</th><th>Actions</th>
+                      <th style={{ width: "210px" }}>Title</th>
+                      <th style={{ width: "85px", textAlign: "center" }}>Type</th>
+                      <th style={{ width: "135px" }}>Category</th>
+                      <th style={{ width: "65px", textAlign: "center" }}>Year</th>
+                      <th style={{ width: "95px", textAlign: "center" }}>Audience</th>
+                      <th style={{ width: "60px", textAlign: "center" }}>Priority</th>
+                      <th style={{ width: "115px", textAlign: "center" }}>Status</th>
+                      <th style={{ width: "165px", minWidth: "165px", textAlign: "center", verticalAlign: "middle" }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredDisplayData.length === 0 ? (
-                      <tr><td colSpan={8} style={{ textAlign: "center", padding: "30px", color: "var(--text-muted)" }}>No content found</td></tr>
+                       <tr><td colSpan={8} style={{ textAlign: "center", padding: "30px", color: "var(--text-muted)" }}>No content found</td></tr>
                     ) : filteredDisplayData.map(item => (
                       <tr key={item._id}>
                         <td>
@@ -1253,18 +1260,18 @@ export default function Content() {
                             </div>
                           </div>
                         </td>
-                        <td>
+                        <td style={{ textAlign: "center" }}>
                           <span className={`badge-type ${item._type}`}>
                             {item._type === "movie" ? "Movie" : item._type === "series" ? "Series" : "Microdrama"}
                           </span>
                         </td>
                         <td>{renderCategories(item.category)}</td>
-                        <td><span className="year-txt">{item.releaseYear || "—"}</span></td>
-                        <td>{renderAudienceBadge(item.is18plus)}</td>
-                        <td><span className="priority-badge">{item.priority || 0}</span></td>
-                        <td>{renderStatusToggle(item)}</td>
-                        <td>
-                          <div className="tbl-actions">
+                        <td style={{ textAlign: "center" }}><span className="year-txt">{item.releaseYear || "—"}</span></td>
+                        <td style={{ textAlign: "center" }}>{renderAudienceBadge(item.is18plus)}</td>
+                        <td style={{ textAlign: "center" }}><span className="priority-badge">{item.priority || 0}</span></td>
+                        <td style={{ textAlign: "center" }}>{renderStatusToggle(item)}</td>
+                        <td style={{ width: "155px", minWidth: "155px", textAlign: "center", verticalAlign: "middle", padding: "8px 6px" }}>
+                          <div className="tbl-actions" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "5px", flexWrap: "nowrap", margin: "0 auto", width: "100%" }}>
                             <button className="icon-btn view" onClick={() => openView(item)} title="View"><Eye size={15} /></button>
                             <button className="icon-btn edit" onClick={() => openEdit(item)} title="Edit"><Edit2 size={15} /></button>
                             <button className="icon-btn del" onClick={() => handleDelete(item)} title="Delete"><Trash2 size={15} /></button>
@@ -1293,10 +1300,17 @@ export default function Content() {
             </div>
             {loading ? <p>Loading...</p> : (
               <div className="tbl-wrap">
-                <table className="tbl">
+                <table className="tbl tbl-content">
                   <thead>
                     <tr>
-                      <th>Title</th><th>Category</th><th>Year</th><th>Audience</th><th>Priority</th><th>Premium</th><th>Status</th><th>Actions</th>
+                      <th style={{ width: "220px" }}>Title</th>
+                      <th style={{ width: "140px" }}>Category</th>
+                      <th style={{ width: "65px", textAlign: "center" }}>Year</th>
+                      <th style={{ width: "95px", textAlign: "center" }}>Audience</th>
+                      <th style={{ width: "60px", textAlign: "center" }}>Priority</th>
+                      <th style={{ width: "75px", textAlign: "center" }}>Premium</th>
+                      <th style={{ width: "115px", textAlign: "center" }}>Status</th>
+                      <th style={{ width: "115px", minWidth: "115px", textAlign: "center", verticalAlign: "middle" }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1335,17 +1349,17 @@ export default function Content() {
                           </div>
                         </td>
                         <td>{renderCategories(movie.category)}</td>
-                        <td><span className="year-txt">{movie.releaseYear || "—"}</span></td>
-                        <td>{renderAudienceBadge(movie.is18plus)}</td>
-                        <td><span className="priority-badge">{movie.priority || 0}</span></td>
-                        <td>
+                        <td style={{ textAlign: "center" }}><span className="year-txt">{movie.releaseYear || "—"}</span></td>
+                        <td style={{ textAlign: "center" }}>{renderAudienceBadge(movie.is18plus)}</td>
+                        <td style={{ textAlign: "center" }}><span className="priority-badge">{movie.priority || 0}</span></td>
+                        <td style={{ textAlign: "center" }}>
                           <span className={`badge-tier ${movie.isPremium ? "premium" : "free"}`}>
                             {movie.isPremium ? "Premium" : "Free"}
                           </span>
                         </td>
-                        <td>{renderStatusToggle(movie)}</td>
-                        <td>
-                          <div className="tbl-actions">
+                        <td style={{ textAlign: "center" }}>{renderStatusToggle(movie)}</td>
+                        <td style={{ width: "115px", minWidth: "115px", textAlign: "center", verticalAlign: "middle", padding: "8px 6px" }}>
+                          <div className="tbl-actions" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "5px", flexWrap: "nowrap", margin: "0 auto", width: "100%" }}>
                             <button className="icon-btn view" onClick={() => openView(movie)} title="View"><Eye size={15} /></button>
                             <button className="icon-btn edit" onClick={() => openEdit(movie)} title="Edit"><Edit2 size={15} /></button>
                             <button className="icon-btn del" onClick={() => handleDelete(movie)} title="Delete"><Trash2 size={15} /></button>
@@ -1376,10 +1390,17 @@ export default function Content() {
             </div>
             {loading ? <p>Loading...</p> : (
               <div className="tbl-wrap">
-                <table className="tbl">
+                <table className="tbl tbl-content">
                   <thead>
                     <tr>
-                      <th>Title</th><th>Category</th><th>Year</th><th>Audience</th><th>Priority</th><th>Seasons</th><th>Status</th><th>Actions</th>
+                      <th style={{ width: "210px" }}>Title</th>
+                      <th style={{ width: "140px" }}>Category</th>
+                      <th style={{ width: "65px", textAlign: "center" }}>Year</th>
+                      <th style={{ width: "95px", textAlign: "center" }}>Audience</th>
+                      <th style={{ width: "60px", textAlign: "center" }}>Priority</th>
+                      <th style={{ width: "85px", textAlign: "center" }}>{contentType === "microdramas" ? "Episodes" : "Seasons"}</th>
+                      <th style={{ width: "115px", textAlign: "center" }}>Status</th>
+                      <th style={{ width: "175px", minWidth: "175px", textAlign: "center", verticalAlign: "middle" }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1407,7 +1428,7 @@ export default function Content() {
                             </div>
                             <div>
                               <div className="media-title">{series.title}</div>
-                              <div className="media-sub">{series.totalSeasons ? `${series.totalSeasons} Season(s)` : "Series"}</div>
+                              <div className="media-sub">{series.totalSeasons ? `${series.totalSeasons} Season(s)` : contentType === "microdramas" ? "Microdrama" : "Series"}</div>
                               {isLocked(series) && (
                                 <div className="media-lock-date">
                                   <Calendar size={11} style={{ marginRight: 3, verticalAlign: "middle" }} />
@@ -1418,18 +1439,24 @@ export default function Content() {
                           </div>
                         </td>
                         <td>{renderCategories(series.category)}</td>
-                        <td><span className="year-txt">{series.releaseYear || "—"}</span></td>
-                        <td>{renderAudienceBadge(series.is18plus)}</td>
-                        <td><span className="priority-badge">{series.priority || 0}</span></td>
-                        <td><span className="seasons-count-tag">{series.totalSeasons || 1} Seasons</span></td>
-                        <td>{renderStatusToggle(series)}</td>
-                        <td>
-                          <div className="tbl-actions">
+                        <td style={{ textAlign: "center" }}><span className="year-txt">{series.releaseYear || "—"}</span></td>
+                        <td style={{ textAlign: "center" }}>{renderAudienceBadge(series.is18plus)}</td>
+                        <td style={{ textAlign: "center" }}><span className="priority-badge">{series.priority || 0}</span></td>
+                        <td style={{ textAlign: "center" }}>
+                          <span className="seasons-count-tag">
+                            {contentType === "microdramas"
+                              ? `${series.episodesCount || series.totalEpisodes || 1} Eps`
+                              : `${series.totalSeasons || 1} Seasons`}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: "center" }}>{renderStatusToggle(series)}</td>
+                        <td style={{ width: "180px", minWidth: "180px", textAlign: "center", verticalAlign: "middle", padding: "8px 6px" }}>
+                          <div className="tbl-actions" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "5px", flexWrap: "nowrap", margin: "0 auto", width: "100%" }}>
                             <button className="icon-btn view" onClick={() => openView(series)} title="View"><Eye size={15} /></button>
                             <button className="icon-btn edit" onClick={() => openEdit(series)} title="Edit"><Edit2 size={15} /></button>
                             <button className="icon-btn del" onClick={() => handleDelete(series)} title="Delete"><Trash2 size={15} /></button>
-                            <button className="btn-seasons" onClick={() => handleSeriesClick(series)} title="Seasons & Episodes">
-                              <Tv size={13} /> Seasons
+                            <button className="btn-seasons" onClick={() => handleSeriesClick(series)} title={contentType === "microdramas" ? "Episodes & Content" : "Seasons & Episodes"}>
+                              <Tv size={13} /> {contentType === "microdramas" ? "Episodes" : "Seasons"}
                             </button>
                           </div>
                         </td>

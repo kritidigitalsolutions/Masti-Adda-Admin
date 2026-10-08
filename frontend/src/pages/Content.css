@@ -1931,23 +1931,24 @@ body.light .add-form-card {
 .tbl-media-cell {
   display: flex !important;
   align-items: center !important;
-  gap: 14px !important;
-  min-width: 220px;
+  gap: 10px !important;
+  min-width: 150px;
+  max-width: 220px;
 }
 
 .thumb-popular-wrap {
   position: relative;
-  width: 48px !important;
-  min-width: 48px !important;
-  max-width: 48px !important;
-  height: 68px !important;
-  min-height: 68px !important;
-  max-height: 68px !important;
+  width: 38px !important;
+  min-width: 38px !important;
+  max-width: 38px !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  max-height: 52px !important;
   flex-shrink: 0 !important;
-  border-radius: 8px !important;
+  border-radius: 6px !important;
   overflow: hidden !important;
   border: 1px solid var(--border) !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   background: var(--bg3);
   display: flex !important;
   align-items: center !important;
@@ -2026,11 +2027,27 @@ body.light .thumb-popular-wrap {
   text-transform: capitalize;
 }
 
-.tbl th:last-child,
-.tbl td:last-child {
-  text-align: left !important;
+/* Responsive, evenly distributed columns in Content Library */
+.tbl-content {
+  width: 100% !important;
+}
+
+.tbl-content th {
+  padding: 10px 6px !important;
+  font-size: 0.72rem !important;
   white-space: nowrap !important;
-  min-width: 180px;
+}
+
+.tbl-content td {
+  padding: 8px 6px !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+}
+
+.tbl-content th:last-child,
+.tbl-content td:last-child {
+  text-align: center !important;
+  white-space: nowrap !important;
 }
 
 body.light .cat-chip {
@@ -2161,29 +2178,37 @@ body.light .cat-chip {
 /* Standardized System Toggle Switch - Inherited from master design system in index.css */
 
 /* Horizontal Actions Toolbar Group */
+.tbl-content .tbl-actions,
 .tbl-actions {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start !important;
-  gap: 6px;
+  justify-content: center;
+  gap: 5px;
   white-space: nowrap;
+}
+
+.tbl-content .tbl-actions .icon-btn {
+  width: 28px !important;
+  height: 28px !important;
+  flex-shrink: 0 !important;
 }
 
 .btn-seasons {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  height: 32px;
+  gap: 3px;
+  padding: 3px 6px;
+  height: 28px;
   border-radius: var(--radius-xs, 6px);
   background: var(--bg3);
   border: 1px solid var(--border);
   color: var(--text-soft);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.18s ease;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-seasons:hover {

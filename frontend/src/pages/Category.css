@@ -3,42 +3,35 @@
    Matches Dashboard & UsersPage Design System
 ========================================================= */
 
-/* Fixed-layout Table to prevent column shifting / shaking */
+/* Table Styles - Fluid & Consistent with UsersPage Design */
 .tbl-categories {
-  table-layout: fixed !important;
   width: 100%;
 }
 
 .tbl-categories th,
 .tbl-categories td {
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* Status Badge with fixed min-width to prevent text width reflow */
-.badge-status-wrap {
-  min-width: 68px;
-  text-align: center;
-  display: inline-block;
-  box-sizing: border-box;
+  vertical-align: middle;
 }
 
 /* Table Priority Input */
 .cat-priority-input {
-  width: 58px;
+  width: 48px;
   background: var(--bg3);
   border: 1px solid var(--border);
   color: var(--primary, #FF5E1E);
   font-weight: 700;
-  font-size: 0.85rem;
-  padding: 4px 6px;
-  border-radius: 8px;
+  font-size: 0.82rem;
+  padding: 3px 6px;
+  border-radius: 6px;
   text-align: center;
   outline: none;
   transition: all 0.2s ease;
   box-sizing: border-box;
+  display: inline-block;
+  margin: 0 auto;
 }
+
 
 body.light .cat-priority-input {
   background: #f1f5f9;
@@ -97,9 +90,6 @@ body.light .cat-avatar {
   font-size: 0.76rem;
   font-family: monospace, SFMono-Regular, Consolas, monospace;
   color: var(--text-muted);
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
   vertical-align: middle;
 }
 
