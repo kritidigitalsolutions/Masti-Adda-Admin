@@ -21,9 +21,9 @@ const SABPAISA_CONFIG = {
   mode: isProduction ? "live" : "test",
   baseUrl: configuredBaseUrl,
   returnUrl:
-    (process.env.SABPAISA_RETURN_URL || "https://golidoli.com/subscription").trim(),
+    (process.env.SABPAISA_RETURN_URL || "https://mastiadda.in/subscription").trim(),
   webhookUrl:
-    (process.env.SABPAISA_WEBHOOK_URL || "https://api.golidoli.com/api/payment/webhook").trim(),
+    (process.env.SABPAISA_WEBHOOK_URL || "https://api.mastiadda.in/api/payment/webhook").trim(),
   apiKey: (process.env.SABPAISA_API_KEY || "").trim(),
   secretKey: (process.env.SABPAISA_SECRET_KEY || "").trim(),
   merchantId: (
@@ -62,7 +62,7 @@ const SABPAISA_CONFIG = {
   ).trim(),
   callbackUrl: (
     process.env.SABPAISA_CALLBACK_URL ||
-    "https://golidoli.com/api/payment/sabpaisa-response"
+    "https://mastiadda.in/api/payment/sabpaisa-response"
   ).trim(),
   mcc: (process.env.SABPAISA_MCC || "5812").trim(),
   channelId: (process.env.SABPAISA_CHANNEL_ID || "W").trim(),
@@ -116,7 +116,7 @@ async function createPG3Payment({
     currency,
     timestamp,
     customerName: customerName || "Customer",
-    customerEmail: customerEmail || "customer@golidoli.com",
+    customerEmail: customerEmail || "customer@mastiadda.in",
     customerPhone: phone,
     customerMobile: phone,
     checksum,

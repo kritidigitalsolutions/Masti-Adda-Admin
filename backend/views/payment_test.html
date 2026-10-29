@@ -460,6 +460,24 @@
         showAuthSuccess();
       }
       fetchPlans();
+
+      // Auto-detect redirect from SabPaisa
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnedTxnId = urlParams.get("txnId") || urlParams.get("clientTxnId");
+      if (returnedTxnId) {
+        lastClientTxnId = returnedTxnId;
+        const enqInput = document.getElementById("enquiry-txnid");
+        if (enqInput) enqInput.value = returnedTxnId;
+        log("info", `[Redirect] Returned from SabPaisa with Txn ID: ${returnedTxnId}`);
+        if (token) {
+          setTimeout(() => {
+            log("info", "[Redirect] Automatically verifying transaction status...");
+            checkStatusManual();
+          }, 800);
+        } else {
+          log("warn", "[Redirect] Please authenticate above to query transaction status.");
+        }
+      }
     });
 
     function log(type, msg) {

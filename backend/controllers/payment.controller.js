@@ -24,7 +24,7 @@ const {
 // =====================================================
 exports.initiatePayment = async (req, res) => {
   try {
-    const { planId, promoCode, userName, userEmail, userContact } = req.body;
+    const { planId, promoCode, userName, userEmail, userContact, returnUrl: customReturnUrl } = req.body;
 
     if (!planId) {
       return res.status(400).json({
@@ -113,7 +113,7 @@ exports.initiatePayment = async (req, res) => {
     const user = await User.findById(userId);
 
     const payerName = userName || (user && (user.name || user.username)) || "OTT User";
-    const payerEmail = userEmail || (user && user.email) || "user@mastiadda.com";
+    const payerEmail = userEmail || (user && user.email) || "user@mastiadda.in";
     let payerMobile = userContact || (user && (user.phone || user.mobile)) || "9999999999";
     payerMobile = String(payerMobile).replace(/[^0-9]/g, "").slice(-10) || "9999999999";
 
@@ -121,8 +121,20 @@ exports.initiatePayment = async (req, res) => {
     const clientTxnId = `TXN_${Date.now()}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     const transDate = formatTransDate(new Date());
 
-    // Customer return URL (Frontend status page)
-    const returnUrl = `${SABPAISA_CONFIG.returnUrl}?txnId=${encodeURIComponent(clientTxnId)}`;
+    // Customer return URL (dynamic client override or configured fallback)
+    const baseReturnUrl = (customReturnUrl && typeof customReturnUrl === "string" && customReturnUrl.trim())
+      ? customReturnUrl.trim()
+      : SABPAISA_CONFIG.returnUrl;
+
+    let returnUrl = baseReturnUrl;
+    try {
+      const parsedReturnUrl = new URL(baseReturnUrl);
+      parsedReturnUrl.searchParams.set("txnId", clientTxnId);
+      returnUrl = parsedReturnUrl.toString();
+    } catch (e) {
+      const sep = baseReturnUrl.includes("?") ? "&" : "?";
+      returnUrl = `${baseReturnUrl}${sep}txnId=${encodeURIComponent(clientTxnId)}`;
+    }
 
     // ========================================
     // PG 3.0 REST API PAYMENT CREATION
