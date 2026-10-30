@@ -1,5 +1,6 @@
 const Series = require("../models/series.model");
 const Episode = require("../models/episode.model");
+const { isWebClient } = require("../utils/clientDetector");
 
 const getSearchFilter = (search) => {
   const term = String(search || "").trim();
@@ -18,6 +19,10 @@ const getAllSeries = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const filter = { isPublished: true, ...getSearchFilter(req.query.search) };
+    if (isWebClient(req)) {
+      filter.is18plus = { $ne: true };
+      filter.isHide = { $ne: true };
+    }
     const series = await Series.find(filter)
       .sort({ priority: 1, createdAt: -1 })
       .skip(skip)
@@ -68,7 +73,11 @@ const getAllSeries = async (req, res) => {
 // ========================================
 const getSeriesBySlug = async (req, res) => {
   try {
-    const series = await Series.findOne({ slug: req.params.slug, isPublished: true });
+    const series = await Series.findOne({
+      slug: req.params.slug,
+      isPublished: true,
+      ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {})
+    });
 
     if (!series) {
       return res.status(404).json({
@@ -112,7 +121,11 @@ const getSeriesBySlug = async (req, res) => {
 // ========================================
 const getSeriesById = async (req, res) => {
   try {
-    const series = await Series.findOne({ _id: req.params.id, isPublished: true });
+    const series = await Series.findOne({
+      _id: req.params.id,
+      isPublished: true,
+      ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {})
+    });
 
     if (!series) {
       return res.status(404).json({

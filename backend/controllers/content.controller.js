@@ -4,6 +4,7 @@ const Episode = require("../models/episode.model");
 // The persisted collection predates the microdrama name; keep using it to retain existing data.
 const Microdrama = require("../models/microdrama.model");
 const MicrodramaEpisode = require("../models/microdramaEpisode.model");
+const { isWebClient } = require("../utils/clientDetector");
 
 const tokenMatchesType = (token, docType) => {
   const t = token.toLowerCase();
@@ -35,7 +36,7 @@ const tokenMatchesType = (token, docType) => {
   return false;
 };
 
-const buildModelFilter = (docType, reqQuery) => {
+const buildModelFilter = (docType, reqQuery, req) => {
   const searchParam = String(reqQuery.search || reqQuery.query || "").trim();
   const typeParam = String(reqQuery.type || "").trim().toLowerCase();
   const genreParam = String(reqQuery.genre || "").trim();
@@ -63,7 +64,7 @@ const buildModelFilter = (docType, reqQuery) => {
   }
 
   // 2. Base conditions
-  const conditions = [{ isPublished: true }];
+  const conditions = [{ isPublished: true }, ...(isWebClient(req) ? [{ is18plus: { $ne: true } }, { isHide: { $ne: true } }] : [])];
 
   // 3. Add explicit criteria filters
   if (genreParam) {
@@ -158,17 +159,17 @@ const getLandingContent = async (req, res) => {
     const episodeProjection = "-videoUrl -__v";
 
     const [movies, series, microdramas] = await Promise.all([
-      Movie.find({ isPublished: true })
+      Movie.find({ isPublished: true, ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {}) })
         .select(contentProjection)
         .sort({ priority: -1, createdAt: -1 })
         .limit(20)
         .lean(),
-      Series.find({ isPublished: true })
+      Series.find({ isPublished: true, ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {}) })
         .select(contentProjection)
         .sort({ priority: -1, createdAt: -1 })
         .limit(20)
         .lean(),
-      Microdrama.find({ isPublished: true })
+      Microdrama.find({ isPublished: true, ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {}) })
         .select(contentProjection)
         .sort({ priority: -1, createdAt: -1 })
         .limit(20)
@@ -217,9 +218,9 @@ const getLandingContent = async (req, res) => {
 
 const getHomeContent = async (req, res) => {
   try {
-    const movieFilter = buildModelFilter("movie", req.query);
-    const seriesFilter = buildModelFilter("series", req.query);
-    const microdramaFilter = buildModelFilter("microdrama", req.query);
+    const movieFilter = buildModelFilter("movie", req.query, req);
+    const seriesFilter = buildModelFilter("series", req.query, req);
+    const microdramaFilter = buildModelFilter("microdrama", req.query, req);
 
     const hasSearch = Boolean(
       req.query.search ||
@@ -290,9 +291,9 @@ const getHomeContent = async (req, res) => {
 
 const searchContent = async (req, res) => {
   try {
-    const movieFilter = buildModelFilter("movie", req.query);
-    const seriesFilter = buildModelFilter("series", req.query);
-    const microdramaFilter = buildModelFilter("microdrama", req.query);
+    const movieFilter = buildModelFilter("movie", req.query, req);
+    const seriesFilter = buildModelFilter("series", req.query, req);
+    const microdramaFilter = buildModelFilter("microdrama", req.query, req);
 
     const hasSearch = Boolean(
       req.query.search ||
@@ -342,16 +343,16 @@ const getContentById = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid content ID format" });
     }
 
-    const movie = await Movie.findOne({ _id: contentId, isPublished: true }).lean();
+    const movie = await Movie.findOne({ _id: contentId, isPublished: true, ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {}) }).lean();
     if (movie) return res.json({ success: true, content: { ...movie, type: "movie" } });
 
-    const series = await Series.findOne({ _id: contentId, isPublished: true }).lean();
+    const series = await Series.findOne({ _id: contentId, isPublished: true, ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {}) }).lean();
     if (series) {
       const episodes = await Episode.find({ seriesId: contentId }).sort({ seasonNumber: 1, episodeNumber: 1 }).lean();
       return res.json({ success: true, content: { ...series, type: "series", episodes } });
     }
 
-    const microdrama = await Microdrama.findOne({ _id: contentId, isPublished: true }).lean();
+    const microdrama = await Microdrama.findOne({ _id: contentId, isPublished: true, ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {}) }).lean();
     if (microdrama) {
       const episodes = await MicrodramaEpisode.find({ microdramaId: contentId }).sort({ episodeNumber: 1 }).lean();
       return res.json({ success: true, content: { ...microdrama, type: "microdrama", episodes } });

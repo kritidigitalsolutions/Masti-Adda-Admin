@@ -8,6 +8,7 @@ const MicrodramaEpisode = require(
 
 const fs = require("fs");
 const path = require("path");
+const { isWebClient } = require("../utils/clientDetector");
 
 const getSearchFilter = (search) => {
   const term = String(search || "").trim();
@@ -25,6 +26,10 @@ const getAllMicrodramas =
       const skip = (page - 1) * limit;
 
       const filter = { isPublished: true, ...getSearchFilter(req.query.search) };
+      if (isWebClient(req)) {
+        filter.is18plus = { $ne: true };
+        filter.isHide = { $ne: true };
+      }
       const dramas =
         await Microdrama.find(filter)
           .sort({
@@ -92,6 +97,7 @@ const getMicrodramaById =
         await Microdrama.findOne({
           _id: req.params.id,
           isPublished: true,
+          ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {}),
         });
 
       if (!microdrama) {
@@ -131,6 +137,7 @@ const searchMicrodramas =
             $options: "i",
           },
           isPublished: true,
+          ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {}),
         }).sort({
           priority: -1,
           createdAt: -1,

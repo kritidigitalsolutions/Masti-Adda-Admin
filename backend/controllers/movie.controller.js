@@ -1,4 +1,5 @@
 const Movie = require("../models/movie.model");
+const { isWebClient } = require("../utils/clientDetector");
 
 const getSearchFilter = (search) => {
   const term = String(search || "").trim();
@@ -20,6 +21,10 @@ const getAllMovies = async (req, res) => {
 
     const skip = (page - 1) * limit;
     const filter = { isPublished: true, ...getSearchFilter(req.query.search) };
+    if (isWebClient(req)) {
+      filter.is18plus = { $ne: true };
+      filter.isHide = { $ne: true };
+    }
 
     const movies = await Movie.find(filter)
       .sort({ priority: 1, createdAt: -1 })
@@ -56,6 +61,7 @@ const getMovieBySlug = async (req, res) => {
     const movie = await Movie.findOne({
       slug: req.params.slug,
       isPublished: true,
+      ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {}),
     }).lean();
 
     if (!movie) {
@@ -89,6 +95,7 @@ const getMovieById = async (req, res) => {
     const movie = await Movie.findOne({
       _id: req.params.id,
       isPublished: true,
+      ...(isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {}),
     }).lean();
 
     if (!movie) {

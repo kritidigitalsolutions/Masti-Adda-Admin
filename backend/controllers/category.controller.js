@@ -2,6 +2,7 @@ const Category = require("../models/category.model");
 const Movie = require("../models/movie.model");
 const Series = require("../models/series.model");
 const Microdrama = require("../models/microdrama.model");
+const { isWebClient } = require("../utils/clientDetector");
 
 const CONTENT_SELECT = "title poster banner slug isPremium isPublished isHide releaseDate priority rating is18plus duration releaseYear";
 
@@ -58,9 +59,10 @@ exports.getCategoryContent = async (req, res) => {
       const movieIds = category.curatedContent.filter(i => i.contentType === "Movie").map(i => i.contentId);
       const seriesIds = category.curatedContent.filter(i => i.contentType === "Series").map(i => i.contentId);
 
+      const adultFilter = isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {};
       const [movies, series] = await Promise.all([
-        movieIds.length > 0 ? Movie.find({ _id: { $in: movieIds } }).lean() : [],
-        seriesIds.length > 0 ? Series.find({ _id: { $in: seriesIds } }).lean() : []
+        movieIds.length > 0 ? Movie.find({ _id: { $in: movieIds }, isPublished: true, ...adultFilter }).lean() : [],
+        seriesIds.length > 0 ? Series.find({ _id: { $in: seriesIds }, isPublished: true, ...adultFilter }).lean() : []
       ]);
 
       const movieMap = new Map(movies.map(m => [m._id.toString(), { ...m, contentType: "Movie" }]));
@@ -77,10 +79,11 @@ exports.getCategoryContent = async (req, res) => {
       // Fallback: fetch all content tagged with this category
       const categoryRegex = new RegExp(`^${category.name}$|^${category.slug}$`, "i");
       
+      const adultFilter = isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {};
       const [movies, series, microdramas] = await Promise.all([
-        Movie.find({ category: { $regex: categoryRegex } }).lean(),
-        Series.find({ category: { $regex: categoryRegex } }).lean(),
-        Microdrama.find({ category: { $regex: categoryRegex } }).lean()
+        Movie.find({ category: { $regex: categoryRegex }, isPublished: true, ...adultFilter }).lean(),
+        Series.find({ category: { $regex: categoryRegex }, isPublished: true, ...adultFilter }).lean(),
+        Microdrama.find({ category: { $regex: categoryRegex }, isPublished: true, ...adultFilter }).lean()
       ]);
 
       contents = [
