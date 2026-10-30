@@ -1026,7 +1026,7 @@ export default function Content() {
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button
             className="btn btn-primary"
-            onClick={() => navigate("/add-content")}
+            onClick={() => navigate("/dashboard/add-content")}
             style={{ padding: "7px 14px", fontSize: "0.82rem" }}
           >
             <Plus size={15} /> Add Content

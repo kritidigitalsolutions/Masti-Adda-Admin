@@ -27,12 +27,12 @@ const companyInfoSchema = new mongoose.Schema(
     address: {
       type: String,
       trim: true,
-      default: "Floor No 12, 1202, Residences Tanaji Nagar, Tanaji Nagar Road No 1, Near Time of India off, W.E. Highway",
+      default: "16-A/802, Near Mother Dairy Vasundhara",
     },
     addressLine1: {
       type: String,
       trim: true,
-      default: "Floor No 12, 1202, Residences Tanaji Nagar, Tanaji Nagar Road No 1, Near Time of India off, W.E. Highway",
+      default: "16-A/802, Near Mother Dairy Vasundhara",
     },
     addressLine2: {
       type: String,
@@ -42,12 +42,12 @@ const companyInfoSchema = new mongoose.Schema(
     city: {
       type: String,
       trim: true,
-      default: "Malad East, Mumbai",
+      default: "Ghaziabad",
     },
     state: {
       type: String,
       trim: true,
-      default: "Maharashtra",
+      default: "Uttar Pradesh",
     },
     country: {
       type: String,
@@ -57,22 +57,22 @@ const companyInfoSchema = new mongoose.Schema(
     postalCode: {
       type: String,
       trim: true,
-      default: "400097",
+      default: "201012",
     },
 
     // Geo-Location & Maps
     latitude: {
       type: Number,
-      default: 19.186,
+      default:19.186,
     },
     longitude: {
       type: Number,
-      default: 72.855,
+      default:72.855,
     },
     googleMapUrl: {
       type: String,
       trim: true,
-      default: "https://maps.google.com/?q=Malad+East+Mumbai",
+      default: "https://maps.google.com/?q=16-A%2F802+Near+Mother+Dairy+Vasundhara+Ghaziabad+Uttar+Pradesh+201012",
     },
 
     // Branding & Legal
@@ -84,7 +84,7 @@ const companyInfoSchema = new mongoose.Schema(
     poweredBy: {
       type: String,
       trim: true,
-      default: "POWERED BY KRITI DIGITAL SOLUTIONS",
+      default: "POWERED BY Prism Media Networks Private Limited",
     },
 
     // Social Links

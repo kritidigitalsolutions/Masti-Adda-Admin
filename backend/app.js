@@ -416,6 +416,15 @@ app.use(
   "/api/home-banners",
   homeBannerRoutes
 );
+
+// ========================================
+// WEBPAGE LAYOUT ROUTES
+// ========================================
+const adminWebpageLayoutRoutes = require("./routes/admin/webpageLayout.routes");
+const userWebpageLayoutRoutes = require("./routes/user/webpageLayout.routes");
+app.use("/api/admin/webpage-layout", adminWebpageLayoutRoutes);
+app.use("/api/webpage-layout", userWebpageLayoutRoutes);
+
 // ========================================
 // COMMENTS ROUTES
 // ========================================
@@ -427,4 +436,3 @@ app.use("/api/v1/app/comments", commentRoutes);
 // EXPORT
 // ========================================
 module.exports = app;
-
