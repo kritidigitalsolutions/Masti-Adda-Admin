@@ -36,12 +36,70 @@ import "./Dashboard.css";
 import "./Plans.css";
 
 // Duration preset options for convenience
+// Billing cycles supported across Masti Adda OTT
+const BILLING_CYCLES = [
+  { value: "daily", label: "Daily (1 Day)", defaultDays: 1 },
+  { value: "weekly", label: "Weekly (7 Days)", defaultDays: 7 },
+  { value: "monthly", label: "Monthly (30 Days)", defaultDays: 30 },
+  { value: "quarterly", label: "Quarterly (90 Days / 3 Mo)", defaultDays: 90 },
+  { value: "half_yearly", label: "Half Yearly (180 Days / 6 Mo)", defaultDays: 180 },
+  { value: "yearly", label: "Yearly (365 Days / 1 Yr)", defaultDays: 365 },
+  { value: "custom", label: "Custom Cycle", defaultDays: "" },
+];
+
 const DURATION_PRESETS = [
+  { label: "1 Day (Daily)", days: 1, type: "daily" },
+  { label: "7 Days (1 Wk)", days: 7, type: "weekly" },
   { label: "30 Days (1 Mo)", days: 30, type: "monthly" },
-  { label: "90 Days (3 Mo)", days: 90, type: "monthly" },
-  { label: "180 Days (6 Mo)", days: 180, type: "monthly" },
+  { label: "90 Days (3 Mo)", days: 90, type: "quarterly" },
+  { label: "180 Days (6 Mo)", days: 180, type: "half_yearly" },
   { label: "365 Days (1 Yr)", days: 365, type: "yearly" },
 ];
+
+export const formatPlanType = (type) => {
+  switch (type) {
+    case "daily":
+      return "Daily";
+    case "weekly":
+      return "Weekly";
+    case "monthly":
+      return "Monthly";
+    case "quarterly":
+      return "Quarterly";
+    case "half_yearly":
+      return "Half Yearly";
+    case "yearly":
+      return "Yearly";
+    case "custom":
+      return "Custom";
+    default:
+      return type
+        ? String(type)
+            .split(/[_\s-]+/)
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join(" ")
+        : "Monthly";
+  }
+};
+
+export const getPlanTypeBadgeClass = (type) => {
+  switch (type) {
+    case "daily":
+      return "daily";
+    case "weekly":
+      return "weekly";
+    case "quarterly":
+      return "quarterly";
+    case "half_yearly":
+      return "half-yearly";
+    case "yearly":
+      return "yearly";
+    case "custom":
+      return "custom";
+    default:
+      return "monthly";
+  }
+};
 
 // Quick suggestions for OTT streaming features
 const FEATURE_SUGGESTIONS = [
@@ -88,6 +146,7 @@ export default function PlansPage() {
     duration: "30",
     features: [],
     planType: "monthly",
+    customCycleName: "",
     sortOrder: 0,
     isRecommended: false,
     isActive: true,
@@ -174,6 +233,36 @@ export default function PlansPage() {
   }, [plans]);
 
   // ==========================================
+  // Dynamic filter tabs derived from present plans in database
+  const filterOptions = useMemo(() => {
+    const list = [
+      { value: "all", label: "All Plans" },
+      { value: "active", label: "Active" },
+      { value: "inactive", label: "Inactive" },
+    ];
+    // Collect all distinct cycles present in current plans
+    const distinctCycles = Array.from(
+      new Set(plans.map((p) => (p.planType || "monthly").toLowerCase().trim()))
+    ).filter(Boolean);
+
+    // Standard ordering preference
+    const standardOrder = ["daily", "weekly", "monthly", "quarterly", "half_yearly", "yearly"];
+    distinctCycles.sort((a, b) => {
+      const idxA = standardOrder.indexOf(a);
+      const idxB = standardOrder.indexOf(b);
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
+    });
+
+    distinctCycles.forEach((cycle) => {
+      list.push({ value: cycle, label: formatPlanType(cycle) });
+    });
+
+    return list;
+  }, [plans]);
+
   // 🔍 FILTERED, SEARCHED & SORTED PLANS
   // ==========================================
   const filteredAndSortedPlans = useMemo(() => {
@@ -181,8 +270,10 @@ export default function PlansPage() {
       // Filter switch
       if (filterType === "active" && p.isActive === false) return false;
       if (filterType === "inactive" && p.isActive !== false) return false;
-      if (filterType === "monthly" && (p.planType || "monthly") !== "monthly") return false;
-      if (filterType === "yearly" && p.planType !== "yearly") return false;
+      if (filterType !== "all" && filterType !== "active" && filterType !== "inactive") {
+        if ((p.planType || "monthly").toLowerCase() !== filterType.toLowerCase()) return false;
+      }
+
 
       // Search match
       if (search.trim()) {
@@ -253,6 +344,31 @@ export default function PlansPage() {
   };
 
   // ==========================================
+  // Compute next available unique sortOrder
+  const getNextAvailableOrder = (excludeId = null) => {
+    const existingOrders = new Set(
+      plans
+        .filter((p) => !excludeId || p._id !== excludeId)
+        .map((p) => Number(p.sortOrder))
+        .filter((n) => !isNaN(n) && n > 0)
+    );
+    let next = 1;
+    while (existingOrders.has(next)) {
+      next++;
+    }
+    return next;
+  };
+
+  // Real-time conflict check for sortOrder
+  const orderConflictPlan = useMemo(() => {
+    if (form.sortOrder === "" || form.sortOrder === null || form.sortOrder === undefined) return null;
+    const currentOrder = Number(form.sortOrder);
+    if (isNaN(currentOrder) || currentOrder <= 0) return null;
+    return plans.find(
+      (p) => (!editingPlanId || p._id !== editingPlanId) && Number(p.sortOrder) === currentOrder
+    );
+  }, [plans, form.sortOrder, editingPlanId]);
+
   // ➕ MODAL OPENERS
   // ==========================================
   const handleOpenCreate = () => {
@@ -264,7 +380,8 @@ export default function PlansPage() {
       duration: "30",
       features: ["HD Streaming", "Ad-Free Content"],
       planType: "monthly",
-      sortOrder: plans.length + 1,
+    customCycleName: "",
+      sortOrder: getNextAvailableOrder(),
       isRecommended: false,
       isActive: true,
     });
@@ -279,7 +396,12 @@ export default function PlansPage() {
       price: plan.price ?? "",
       duration: plan.duration ?? "",
       features: Array.isArray(plan.features) ? [...plan.features] : [],
-      planType: ["monthly", "yearly"].includes(plan.planType) ? plan.planType : "monthly",
+      planType: ["daily", "weekly", "monthly", "quarterly", "half_yearly", "yearly"].includes((plan.planType || "monthly").toLowerCase())
+        ? (plan.planType || "monthly").toLowerCase()
+        : "custom",
+      customCycleName: ["daily", "weekly", "monthly", "quarterly", "half_yearly", "yearly"].includes((plan.planType || "monthly").toLowerCase())
+        ? ""
+        : formatPlanType(plan.planType),
       sortOrder: plan.sortOrder || 0,
       isRecommended: plan.isRecommended || false,
       isActive: plan.isActive !== false,
@@ -321,6 +443,50 @@ export default function PlansPage() {
     }));
   };
 
+  const handlePlanNameChange = (nameVal) => {
+    setForm((prev) => {
+      const lower = nameVal.toLowerCase();
+      let nextType = prev.planType;
+      let nextDuration = prev.duration;
+
+      // Smart auto-detection when creating a plan if user hasn't explicitly chosen a cycle
+      if (modalMode === "create" && (prev.planType === "monthly" || !prev.planType)) {
+        if (lower.includes("daily") || lower.includes("1 day") || lower.includes("per day")) {
+          nextType = "daily";
+          nextDuration = "1";
+        } else if (lower.includes("weekly") || lower.includes("7 day")) {
+          nextType = "weekly";
+          nextDuration = "7";
+        } else if (lower.includes("quarter") || lower.includes("3 month")) {
+          nextType = "quarterly";
+          nextDuration = "90";
+        } else if (lower.includes("half year") || lower.includes("6 month")) {
+          nextType = "half_yearly";
+          nextDuration = "180";
+        } else if (lower.includes("annual") || lower.includes("yearly") || lower.includes("1 year")) {
+          nextType = "yearly";
+          nextDuration = "365";
+        }
+      }
+
+      return {
+        ...prev,
+        name: nameVal,
+        planType: nextType,
+        duration: nextDuration,
+      };
+    });
+  };
+
+  const handleBillingCycleChange = (selectedType) => {
+    const cycle = BILLING_CYCLES.find((c) => c.value === selectedType);
+    setForm((prev) => ({
+      ...prev,
+      planType: selectedType,
+      duration: cycle && cycle.defaultDays ? String(cycle.defaultDays) : prev.duration,
+    }));
+  };
+
   const handleApplyPreset = (preset) => {
     setForm((prev) => ({
       ...prev,
@@ -348,6 +514,24 @@ export default function PlansPage() {
       return;
     }
 
+    if (orderConflictPlan) {
+      showToast?.(
+        `Display Order #${form.sortOrder} is already assigned to "${orderConflictPlan.name}". Please choose a unique order number.`,
+        "error"
+      );
+      return;
+    }
+
+    let finalPlanType = form.planType;
+    if (form.planType === "custom") {
+      const trimmedCustom = (form.customCycleName || "").trim();
+      if (!trimmedCustom) {
+        showToast?.("Please enter a custom billing cycle name (e.g. Daily, Weekend, Bi-Weekly)", "error");
+        return;
+      }
+      finalPlanType = trimmedCustom.toLowerCase().replace(/\s+/g, "_");
+    }
+
     setSaving(true);
     try {
       const payload = {
@@ -355,7 +539,7 @@ export default function PlansPage() {
         price: Number(form.price),
         duration: Number(form.duration),
         features: form.features,
-        planType: form.planType,
+        planType: finalPlanType,
         sortOrder: Number(form.sortOrder) || 0,
         isRecommended: Boolean(form.isRecommended),
         isActive: Boolean(form.isActive),
@@ -494,7 +678,7 @@ export default function PlansPage() {
     const data = listToExport.map((p, index) => ({
       "S.No": index + 1,
       "Plan Name": p.name || "N/A",
-      "Billing Cycle": (p.planType || "Monthly").toUpperCase(),
+      "Billing Cycle": formatPlanType(p.planType).toUpperCase(),
       "Duration (Days)": p.duration || 0,
       "Price (INR)": p.price || 0,
       Status: p.isActive !== false ? "Active" : "Inactive",
@@ -530,7 +714,7 @@ export default function PlansPage() {
     const tableRows = listToExport.map((p, index) => [
       index + 1,
       p.name || "N/A",
-      (p.planType || "monthly").toUpperCase(),
+      formatPlanType(p.planType).toUpperCase(),
       `${p.duration} days`,
       `₹${p.price}`,
       p.isActive !== false ? "Active" : "Inactive",
@@ -764,13 +948,16 @@ export default function PlansPage() {
           <div className="plans-toolbar-row plans-toolbar-filter-row">
             {/* Segmented Filter Switch (Plans Bar) */}
             <div className="segmented-switch">
-              {[
-                { value: "all", label: "All Plans" },
-                { value: "active", label: "Active" },
-                { value: "inactive", label: "Inactive" },
-                { value: "monthly", label: "Monthly" },
-                { value: "yearly", label: "Yearly" },
-              ].map((opt) => (
+              {filterOptions.map((opt) => (
+
+
+
+
+
+
+
+
+
                 <button
                   key={opt.value}
                   type="button"
@@ -888,8 +1075,8 @@ export default function PlansPage() {
                     <div>
                       <div className="plan-card-top">
                         <div className="plan-badges-group">
-                          <span className={`plan-type-badge ${isYearly ? "yearly" : ""}`}>
-                            {p.planType || "Monthly"}
+                          <span className={`plan-type-badge ${getPlanTypeBadgeClass(p.planType)}`}>
+                            {formatPlanType(p.planType)}
                           </span>
                           {p.isRecommended && (
                             <span className="plan-rec-badge">
@@ -1132,10 +1319,10 @@ export default function PlansPage() {
                         </td>
                         <td>
                           <span
-                            className={`plan-type-badge ${isYearly ? "yearly" : ""}`}
+                            className={`plan-type-badge ${getPlanTypeBadgeClass(p.planType)}`}
                             style={{ fontSize: "0.68rem" }}
                           >
-                            {p.planType || "Monthly"}
+                            {formatPlanType(p.planType)}
                           </span>
                         </td>
                         <td>
@@ -1326,7 +1513,7 @@ export default function PlansPage() {
                       className="form-input-styled"
                       placeholder="e.g. Standard HD, Premium 4K, VIP Annual"
                       value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      onChange={(e) => handlePlanNameChange(e.target.value)}
                       required
                     />
                   </div>
@@ -1336,13 +1523,35 @@ export default function PlansPage() {
                     <select
                       className="form-input-styled"
                       value={form.planType}
-                      onChange={(e) => setForm({ ...form, planType: e.target.value })}
+                      onChange={(e) => handleBillingCycleChange(e.target.value)}
                     >
-                      <option value="monthly">Monthly Cycle</option>
-                      <option value="yearly">Yearly Cycle</option>
+                      {BILLING_CYCLES.map((cycle) => (
+                        <option key={cycle.value} value={cycle.value}>
+                          {cycle.label}
+                        </option>
+                      ))}
+
                     </select>
                   </div>
                 </div>
+
+                {form.planType === "custom" && (
+                  <div className="plan-form-row" style={{ marginTop: "-6px", marginBottom: "16px" }}>
+                    <label className="plan-form-label" style={{ color: "var(--primary)", display: "flex", alignItems: "center", gap: 5 }}>
+                      <Sparkles size={13} /> Custom Billing Cycle Name *
+                    </label>
+                    <input
+                      className="form-input-styled"
+                      placeholder="e.g. Daily, Weekend Pass, Bi-Weekly, Lifetime"
+                      value={form.customCycleName}
+                      onChange={(e) => setForm({ ...form, customCycleName: e.target.value })}
+                      required
+                    />
+                    <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "4px", display: "block" }}>
+                      💡 This cycle will automatically become its own filter tab & badge across your OTT app.
+                    </span>
+                  </div>
+                )}
 
                 {/* Row 2: Price & Display Order (50% / 50% Symmetry) */}
                 <div className="plan-form-grid-2col">
@@ -1361,14 +1570,54 @@ export default function PlansPage() {
                   </div>
 
                   <div className="plan-form-row">
-                    <label className="plan-form-label">Display Order (#)</label>
+                    <label className="plan-form-label">Display Order (#) *</label>
                     <input
                       className="form-input-styled"
                       type="number"
-                      placeholder="e.g. 1 (lower displays first)"
+                      min="1"
+                      placeholder="e.g. 1"
                       value={form.sortOrder}
+
                       onChange={(e) => setForm({ ...form, sortOrder: e.target.value })}
+                      required
+                      style={orderConflictPlan ? { borderColor: "#ef4444" } : undefined}
                     />
+                    {orderConflictPlan ? (
+                      <div
+                        style={{
+                          fontSize: "0.74rem",
+                          color: "#ef4444",
+                          marginTop: "5px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: "6px",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span>
+                          ⚠️ Already used by <strong>"{orderConflictPlan.name}"</strong>
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          style={{
+                            fontSize: "0.7rem",
+                            padding: "2px 8px",
+                            height: "auto",
+                            color: "var(--primary)",
+                            borderColor: "var(--primary)",
+                          }}
+                          onClick={() => setForm({ ...form, sortOrder: getNextAvailableOrder(editingPlanId) })}
+                        >
+                          Use Free (#{getNextAvailableOrder(editingPlanId)})
+                        </button>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "4px", display: "block" }}>
+                        Unique priority. Next free: #{getNextAvailableOrder(editingPlanId)}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -1699,8 +1948,8 @@ export default function PlansPage() {
                   >
                     Billing Cycle
                   </span>
-                  <span className={`plan-type-badge ${viewPlan.planType === "yearly" ? "yearly" : ""}`}>
-                    {viewPlan.planType || "Monthly"}
+                  <span className={`plan-type-badge ${getPlanTypeBadgeClass(viewPlan.planType)}`}>
+                    {formatPlanType(viewPlan.planType)}
                   </span>
                 </div>
 

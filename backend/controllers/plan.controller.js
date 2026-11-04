@@ -3,21 +3,16 @@ const Plan = require("../models/plan.model");
 // GET ACTIVE PLANS
 exports.getPlans = async (req, res) => {
   try {
-    const requestedPlanType = req.params.planType;
-    const allowedPlanTypes = ["monthly", "yearly"];
+    const rawType = req.params.planType;
+    const requestedPlanType = rawType ? rawType.toLowerCase().trim() : null;
 
-    if (requestedPlanType && !allowedPlanTypes.includes(requestedPlanType)) {
-      return res.status(400).json({
-        success: false,
-        message: "Plan type must be monthly or yearly",
-      });
+    const filter = { isActive: true };
+    if (requestedPlanType && requestedPlanType !== "all") {
+      filter.planType = requestedPlanType;
     }
 
-    const plans = await Plan.find({
-      isActive: true,
-      planType: requestedPlanType || { $in: allowedPlanTypes },
-    })
-      .sort({ createdAt: -1 });
+    const plans = await Plan.find(filter)
+      .sort({ sortOrder: 1, createdAt: -1 });
 
     res.json({
       success: true,

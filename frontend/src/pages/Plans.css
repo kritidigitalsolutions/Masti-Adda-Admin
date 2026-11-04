@@ -717,6 +717,36 @@ body.light .plan-tier-card.is-recommended {
   border: 1px solid rgba(59, 130, 246, 0.25);
 }
 
+.plan-type-badge.daily {
+  background: rgba(255, 209, 26, 0.15);
+  color: #ffd11a;
+  border-color: rgba(255, 209, 26, 0.4);
+}
+
+.plan-type-badge.weekly {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.plan-type-badge.quarterly {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.plan-type-badge.half-yearly {
+  background: rgba(6, 182, 212, 0.12);
+  color: #06b6d4;
+  border-color: rgba(6, 182, 212, 0.3);
+}
+
+.plan-type-badge.custom {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
 .plan-type-badge.yearly {
   background: rgba(139, 92, 246, 0.12);
   color: #a78bfa;
@@ -727,6 +757,36 @@ body.light .plan-type-badge {
   background: #eff6ff;
   color: #2563eb;
   border-color: #bfdbfe;
+}
+
+body.light .plan-type-badge.daily {
+  background: #fefce8;
+  color: #b45309;
+  border-color: #fef08a;
+}
+
+body.light .plan-type-badge.weekly {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+body.light .plan-type-badge.quarterly {
+  background: #fffbeb;
+  color: #d97706;
+  border-color: #fde68a;
+}
+
+body.light .plan-type-badge.half-yearly {
+  background: #ecfeff;
+  color: #0891b2;
+  border-color: #a5f3fc;
+}
+
+body.light .plan-type-badge.custom {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
 }
 
 body.light .plan-type-badge.yearly {

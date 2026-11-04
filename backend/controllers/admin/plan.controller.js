@@ -14,6 +14,17 @@ exports.createPlan = async (req, res) => {
       isActive,
     } = req.body;
 
+    if (sortOrder !== undefined && sortOrder !== null && sortOrder !== "") {
+      const orderNum = Number(sortOrder);
+      const existing = await Plan.findOne({ sortOrder: orderNum });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: `Display Order #${orderNum} is already assigned to "${existing.name}". Please choose another order number.`,
+        });
+      }
+    }
+
     const plan = await Plan.create({
       name,
       price,
@@ -42,6 +53,20 @@ exports.createPlan = async (req, res) => {
 // UPDATE PLAN
 exports.updatePlan = async (req, res) => {
   try {
+    if (req.body.sortOrder !== undefined && req.body.sortOrder !== null && req.body.sortOrder !== "") {
+      const orderNum = Number(req.body.sortOrder);
+      const existing = await Plan.findOne({
+        sortOrder: orderNum,
+        _id: { $ne: req.params.id },
+      });
+      if (existing) {
+        return res.status(400).json({
+          success: false,
+          message: `Display Order #${orderNum} is already assigned to "${existing.name}". Please choose another order number.`,
+        });
+      }
+    }
+
     const plan = await Plan.findByIdAndUpdate(
       req.params.id,
       req.body,

@@ -73,10 +73,8 @@ const planSchema =
       planType: {
         type: String,
 
-        enum: [
-          "monthly",
-          "yearly",
-        ],
+        trim: true,
+        lowercase: true,
 
         default: "monthly",
       },
