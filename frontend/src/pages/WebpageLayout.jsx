@@ -50,6 +50,29 @@ const moveInArray = (arr, fromIdx, toIdx) => {
 // Extract ObjectId string regardless of whether contentId is populated or raw
 const extractId = (contentId) => contentId?._id || contentId;
 
+// Flexible category matching helper
+const isCategoryMatch = (itemCategory, catObj, categorySlug) => {
+  if (!itemCategory) return false;
+  const catName = (catObj?.name || "").trim().toLowerCase();
+  const catSlug = (categorySlug || catObj?.slug || "").trim().toLowerCase();
+  const catId = String(catObj?._id || "").toLowerCase();
+
+  const cats = Array.isArray(itemCategory) ? itemCategory : [itemCategory];
+  return cats.some((c) => {
+    if (!c) return false;
+    const str = String(c._id || c).trim().toLowerCase();
+    return (
+      str === catSlug ||
+      str === catName ||
+      str === catId ||
+      str.replace(/\s+/g, "-") === catSlug ||
+      str.replace(/-/g, " ") === catName ||
+      str.replace(/[\s-_]+/g, "") === catSlug.replace(/[\s-_]+/g, "") ||
+      str.replace(/[\s-_]+/g, "") === catName.replace(/[\s-_]+/g, "")
+    );
+  });
+};
+
 // ── Sub-components ─────────────────────────────────────────────────────────
 
 /** Single banner card — landscape style matching reference design */
@@ -222,7 +245,7 @@ function BannerSearchBar({ allContent, selected, onAdd }) {
 }
 
 /** Curator grid for a single carousel section */
-function SectionCurator({ section, allContent, onToggleItem, onMoveItem }) {
+function SectionCurator({ section, allContent, categories = [], onToggleItem, onMoveItem }) {
   const [search, setSearch] = useState("");
   const [editingPos, setEditingPos] = useState(null); // idx being edited
   const [posInput, setPosInput] = useState("");
@@ -231,15 +254,15 @@ function SectionCurator({ section, allContent, onToggleItem, onMoveItem }) {
     (section.items || []).map((i) => extractId(i.contentId)?.toString())
   );
 
-  // Filter allContent to items matching categorySlug
-  const categoryContent = allContent.filter((c) => {
-    if (!c.category) return false;
-    const cats = Array.isArray(c.category) ? c.category : [c.category];
-    return cats.some(
-      (cat) =>
-        cat?.toLowerCase?.() === section.categorySlug?.toLowerCase()
-    );
-  });
+  const catObj = (categories || []).find(
+    (c) => (c.slug || c._id?.toString()) === section.categorySlug ||
+           c.name?.toLowerCase() === section.categorySlug?.toLowerCase()
+  );
+
+  // Filter allContent to items matching categorySlug or category details
+  const categoryContent = allContent.filter((c) =>
+    isCategoryMatch(c.category, catObj, section.categorySlug)
+  );
 
   const filtered = categoryContent.filter((c) =>
     c.title?.toLowerCase().includes(search.toLowerCase())
@@ -538,7 +561,25 @@ export default function WebpageLayout() {
     }
     const cat = categories.find((c) => (c.slug || c._id) === addRowSlug);
     const title = addRowTitle.trim() || cat?.name || addRowSlug;
-    const newSection = { categorySlug: addRowSlug, title, items: [] };
+
+    // Auto pre-populate items if category already has curatedContent or matching tagged content
+    let initialItems = [];
+    if (cat?.curatedContent && cat.curatedContent.length > 0) {
+      initialItems = cat.curatedContent.map((i) => ({
+        contentType: contentTypeLabel(i.contentType),
+        contentId: i.contentId?._id || i.contentId,
+      }));
+    } else {
+      const matching = allContent.filter((c) =>
+        isCategoryMatch(c.category, cat, addRowSlug)
+      );
+      initialItems = matching.map((c) => ({
+        contentType: contentTypeLabel(c.type || c.contentType),
+        contentId: c,
+      }));
+    }
+
+    const newSection = { categorySlug: addRowSlug, title, items: initialItems };
 
     setSections((prev) => {
       const copy = [...prev];
@@ -995,6 +1036,7 @@ export default function WebpageLayout() {
                             <SectionCurator
                               section={section}
                               allContent={allContent}
+                              categories={categories}
                               onToggleItem={toggleSectionItem}
                               onMoveItem={moveSectionItem}
                             />

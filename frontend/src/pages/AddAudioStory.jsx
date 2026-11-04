@@ -102,6 +102,11 @@ export default function AddAudioStory() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        const audioCatRes = await API.get("/admin/audio-categories");
+        if (audioCatRes.data?.success && audioCatRes.data.categories?.length > 0) {
+          setCategories(audioCatRes.data.categories);
+          return;
+        }
         const res = await API.get("/admin/categories");
         if (res.data?.success) {
           const list = (res.data.categories || []).filter((c) => c.isActive !== false);
@@ -316,7 +321,7 @@ export default function AddAudioStory() {
       });
 
       showToast("Audio Story published successfully! 🚀", "success");
-      navigate("/dashboard/audio-stories");
+      navigate("/dashboard/audio-content");
     } catch (err) {
       console.error("Publishing error:", err);
       showToast(err.response?.data?.message || "Error publishing audio story", "error");
@@ -334,7 +339,7 @@ export default function AddAudioStory() {
         <button
           type="button"
           className="audio-back-btn"
-          onClick={() => navigate("/dashboard/audio-stories")}
+          onClick={() => navigate("/dashboard/audio-content")}
           title="Back to library"
         >
           <ArrowLeft size={15} />

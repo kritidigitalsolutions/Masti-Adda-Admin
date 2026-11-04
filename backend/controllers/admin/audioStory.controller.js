@@ -1,6 +1,21 @@
+const mongoose = require("mongoose");
 const audioStoryService = require("../../services/audioStory.service");
 const { getMediaUrl, deleteMedia } = require("../../utils/mediaUrl");
 const AudioEpisode = require("../../models/audioEpisode.model");
+
+const parseCategories = (raw) => {
+  if (!raw) return [];
+  let cats = raw;
+  if (typeof raw === "string") {
+    try {
+      cats = JSON.parse(raw);
+    } catch {
+      cats = raw.split(",").map((c) => c.trim());
+    }
+  }
+  if (!Array.isArray(cats)) return [];
+  return cats.filter((id) => mongoose.Types.ObjectId.isValid(id));
+};
 
 const addStory = async (req, res) => {
   try {
@@ -15,9 +30,11 @@ const addStory = async (req, res) => {
       bannerImage = getMediaUrl(req.files.bannerImage[0]);
     }
 
+    const categories = parseCategories(req.body.parsedCategories || req.body.categories);
+
     const storyData = {
       ...req.body,
-      categories: req.body.parsedCategories || [],
+      categories,
       coverImage,
       bannerImage,
     };
@@ -88,8 +105,8 @@ const updateStory = async (req, res) => {
     }
 
     const updateData = { ...req.body };
-    if (req.body.parsedCategories) {
-      updateData.categories = req.body.parsedCategories;
+    if (req.body.parsedCategories || req.body.categories) {
+      updateData.categories = parseCategories(req.body.parsedCategories || req.body.categories);
     }
 
     // Handle files upload and old media deletion

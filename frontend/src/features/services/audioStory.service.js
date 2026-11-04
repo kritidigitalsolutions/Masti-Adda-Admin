@@ -47,10 +47,13 @@ export const createAudioStory = async ({
   if (form.scheduleDate) formData.append("scheduleDate", form.scheduleDate);
   formData.append("priority", Number(form.priority) || 0);
 
-  formData.append(
-    "parsedCategories",
-    JSON.stringify(Array.isArray(form.categories) ? form.categories : (form.categories ? [form.categories] : []))
-  );
+  const categoriesArray = Array.isArray(form.categories)
+    ? form.categories
+    : form.categories
+    ? [form.categories]
+    : [];
+  formData.append("categories", JSON.stringify(categoriesArray));
+  formData.append("parsedCategories", JSON.stringify(categoriesArray));
 
   // Send the Bunny CDN URLs directly as text inputs!
   formData.append("coverImage", coverImageUrl);

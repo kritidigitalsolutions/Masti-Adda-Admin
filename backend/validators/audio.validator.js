@@ -16,7 +16,8 @@ const validateAudioCategory = (req, res, next) => {
 };
 
 const validateAudioStory = (req, res, next) => {
-  const { title, categories, status, isPremium, priority } = req.body;
+  const { title, status, isPremium, priority } = req.body;
+  const rawCategories = req.body.categories || req.body.parsedCategories;
 
   if (!title || typeof title !== "string" || !title.trim()) {
     return res.status(400).json({
@@ -25,13 +26,13 @@ const validateAudioStory = (req, res, next) => {
     });
   }
 
-  if (categories) {
-    let cats = categories;
-    if (typeof categories === "string") {
+  if (rawCategories) {
+    let cats = rawCategories;
+    if (typeof rawCategories === "string") {
       try {
-        cats = JSON.parse(categories);
+        cats = JSON.parse(rawCategories);
       } catch {
-        cats = categories.split(",").map((c) => c.trim());
+        cats = rawCategories.split(",").map((c) => c.trim());
       }
     }
 
@@ -42,15 +43,21 @@ const validateAudioStory = (req, res, next) => {
       });
     }
 
+    const validCats = [];
     for (const catId of cats) {
-      if (!isValidObjectId(catId)) {
+      if (catId && !isValidObjectId(catId)) {
         return res.status(400).json({
           success: false,
           message: `Invalid category ID: ${catId}`,
         });
       }
+      if (catId) validCats.push(catId);
     }
-    req.body.parsedCategories = cats;
+    req.body.parsedCategories = validCats;
+    req.body.categories = validCats;
+  } else {
+    req.body.parsedCategories = [];
+    req.body.categories = [];
   }
 
   if (status && !["Draft", "Published", "Archived"].includes(status)) {

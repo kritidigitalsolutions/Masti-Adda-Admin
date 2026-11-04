@@ -18,11 +18,17 @@ const populateItems = async (items) => {
   const microdramaIds = [];
 
   for (const item of items) {
-    const id = item.contentId?.toString();
+    const id = (item.contentId?._id || item.contentId)?.toString();
     if (!id) continue;
-    if (item.contentType === "Movie") movieIds.push(id);
-    else if (item.contentType === "Series") seriesIds.push(id);
-    else if (item.contentType === "Microdrama") microdramaIds.push(id);
+    const type = (item.contentType || "").toLowerCase();
+    if (type === "movie") movieIds.push(id);
+    else if (type === "series") seriesIds.push(id);
+    else if (type === "microdrama") microdramaIds.push(id);
+    else {
+      movieIds.push(id);
+      seriesIds.push(id);
+      microdramaIds.push(id);
+    }
   }
 
   const [movies, seriesDocs, microdramas] = await Promise.all([

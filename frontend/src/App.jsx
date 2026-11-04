@@ -127,6 +127,7 @@ function App() {
             <Route path="ai-reels" element={<AIReels />} />
             <Route path="add-ai-reel" element={<AddAIReels />} />
             <Route path="audio-content" element={<AudioStories />} />
+            <Route path="audio-stories" element={<AudioStories />} />
             <Route path="add-audio-story" element={<AddAudioStory />} />
             <Route path="webpage-layout" element={<WebpageLayoutPage />} />
           </Route>

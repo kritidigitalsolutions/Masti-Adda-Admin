@@ -22,6 +22,27 @@ const HideArrowsStyle = () => (
   `}</style>
 );
 
+const isCategoryMatch = (itemCategory, cat) => {
+  if (!itemCategory || !cat) return false;
+  const catName = (cat.name || "").trim().toLowerCase();
+  const catSlug = (cat.slug || "").trim().toLowerCase();
+  const catId = String(cat._id || "").toLowerCase();
+
+  const cats = Array.isArray(itemCategory) ? itemCategory : [itemCategory];
+  return cats.some((c) => {
+    if (!c) return false;
+    const str = String(c._id || c).trim().toLowerCase();
+    return (
+      str === catId ||
+      str === catSlug ||
+      str === catName ||
+      str.replace(/\s+/g, "-") === catSlug ||
+      str.replace(/-/g, " ") === catName ||
+      str.replace(/[\s-_]+/g, "") === catName.replace(/[\s-_]+/g, "")
+    );
+  });
+};
+
 export default function Category() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -108,7 +129,7 @@ export default function Category() {
           if (!cat.curatedContent || cat.curatedContent.length === 0) {
             const connected = cList.filter(i => {
               if (!Array.isArray(i.category)) return false;
-              return i.category.includes(cat.slug) || i.category.includes(cat.name) || i.category.includes(cat._id);
+              return isCategoryMatch(i.category, cat);
             });
             if (connected.length > 0) {
               map[cat._id] = connected.map(c => ({
@@ -333,7 +354,8 @@ export default function Category() {
       if (!Array.isArray(i.category)) return false;
       return i.category.includes(slug) ||
              (catObj && i.category.includes(catObj.name)) ||
-             (catObj && i.category.includes(catObj._id));
+             (catObj && i.category.includes(catObj._id)) ||
+             isCategoryMatch(i.category, catObj || { _id: catId, slug });
     });
 
     if (connected.length === 0) {
