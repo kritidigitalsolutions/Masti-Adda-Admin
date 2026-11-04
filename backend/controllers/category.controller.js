@@ -56,22 +56,26 @@ exports.getCategoryContent = async (req, res) => {
 
     if (category.curatedContent && category.curatedContent.length > 0) {
       // Return curated (admin-selected) content in the saved order
-      const movieIds = category.curatedContent.filter(i => i.contentType === "Movie").map(i => i.contentId);
-      const seriesIds = category.curatedContent.filter(i => i.contentType === "Series").map(i => i.contentId);
+      const allContentIds = category.curatedContent
+        .map(i => i.contentId?._id || i.contentId)
+        .filter(Boolean);
 
       const adultFilter = isWebClient(req) ? { is18plus: { $ne: true }, isHide: { $ne: true } } : {};
-      const [movies, series] = await Promise.all([
-        movieIds.length > 0 ? Movie.find({ _id: { $in: movieIds }, isPublished: true, ...adultFilter }).lean() : [],
-        seriesIds.length > 0 ? Series.find({ _id: { $in: seriesIds }, isPublished: true, ...adultFilter }).lean() : []
+      const [movies, series, microdramas] = await Promise.all([
+        allContentIds.length > 0 ? Movie.find({ _id: { $in: allContentIds }, isPublished: true, ...adultFilter }).lean() : [],
+        allContentIds.length > 0 ? Series.find({ _id: { $in: allContentIds }, isPublished: true, ...adultFilter }).lean() : [],
+        allContentIds.length > 0 ? Microdrama.find({ _id: { $in: allContentIds }, isPublished: true, ...adultFilter }).lean() : []
       ]);
 
-      const movieMap = new Map(movies.map(m => [m._id.toString(), { ...m, contentType: "Movie" }]));
-      const seriesMap = new Map(series.map(s => [s._id.toString(), { ...s, contentType: "Series" }]));
+      const contentMap = new Map();
+      movies.forEach(m => contentMap.set(m._id.toString(), { ...m, contentType: "Movie" }));
+      series.forEach(s => contentMap.set(s._id.toString(), { ...s, contentType: "Series" }));
+      microdramas.forEach(d => contentMap.set(d._id.toString(), { ...d, contentType: "Microdrama" }));
 
       contents = category.curatedContent
         .map((item, index) => {
-          const idStr = item.contentId.toString();
-          const contentData = item.contentType === "Movie" ? movieMap.get(idStr) : seriesMap.get(idStr);
+          const idStr = (item.contentId?._id || item.contentId).toString();
+          const contentData = contentMap.get(idStr);
           return contentData ? { ...contentData, position: item.position || index + 1 } : null;
         })
         .filter(Boolean);

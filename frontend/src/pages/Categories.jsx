@@ -112,7 +112,7 @@ export default function Category() {
             });
             if (connected.length > 0) {
               map[cat._id] = connected.map(c => ({
-                contentType: c.contentType === "movie" ? "Movie" : "Series",
+                contentType: c.contentType === "movie" ? "Movie" : (c.contentType === "microdrama" ? "Microdrama" : "Series"),
                 contentId: c
               }));
             }
@@ -296,7 +296,7 @@ export default function Category() {
       );
     } else {
       nextItems = [...currentItems, {
-        contentType: item.contentType === "movie" ? "Movie" : "Series",
+        contentType: item.contentType === "movie" ? "Movie" : (item.contentType === "microdrama" ? "Microdrama" : "Series"),
         contentId: item,
       }];
     }

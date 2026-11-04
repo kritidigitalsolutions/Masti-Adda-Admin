@@ -31,7 +31,7 @@ const categorySchema = new mongoose.Schema(
       {
         contentType: {
           type: String,
-          enum: ["Movie", "Series"],
+          enum: ["Movie", "Series", "Microdrama"],
           required: true
         },
         contentId: {
