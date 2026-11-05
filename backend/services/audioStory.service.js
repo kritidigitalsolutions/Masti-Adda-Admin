@@ -181,8 +181,7 @@ const getHomeFeed = async (userId = null) => {
       const stories = await AudioStory.find({
         categories: cat._id,
         isPublished: true,
-        status: "Published",
-      })
+        })
         .sort({ priority: 1, createdAt: -1 })
         .limit(10)
         .lean();

@@ -24,7 +24,6 @@ const getStories = async (req, res) => {
     const userId = getUserIdFromHeader(req);
     const filter = {
       ...req.query,
-      status: "Published",
       isPublished: true,
     };
 
@@ -76,7 +75,6 @@ const searchStories = async (req, res) => {
     const stories = await audioStoryService.getStories(
       {
         search: query,
-        status: "Published",
         isPublished: true,
       },
       userId
@@ -101,7 +99,7 @@ const getStoryById = async (req, res) => {
     const { id } = req.params;
 
     const story = await audioStoryService.getStoryById(id, userId);
-    if (!story || story.status !== "Published" || !story.isPublished) {
+    if (!story || !story.isPublished) {
       return res.status(404).json({
         success: false,
         message: "Audio story not found",
