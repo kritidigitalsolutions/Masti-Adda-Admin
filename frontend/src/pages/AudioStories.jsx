@@ -223,6 +223,9 @@ export default function AudioStories() {
       setAudioCurrentTime(0);
     };
     const handleError = () => {
+      if (!audio.src || audio.src === window.location.href) {
+        return;
+      }
       setIsPlaying(false);
       showToast("Audio stream unavailable or failed to load", "error");
     };
@@ -289,8 +292,10 @@ export default function AudioStories() {
   };
 
   const handleClosePlayer = () => {
-    audioRef.current.pause();
-    audioRef.current.src = "";
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
     setActivePlayingEp(null);
     setIsPlaying(false);
     setAudioCurrentTime(0);
