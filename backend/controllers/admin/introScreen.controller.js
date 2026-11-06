@@ -1,6 +1,18 @@
 const IntroScreen = require("../../models/introScreen.model");
 
 /**
+ * Normalizes all screen orders to be strictly sequential 1, 2, 3...
+ */
+const normalizeOrders = async () => {
+  const screens = await IntroScreen.find().sort({ order: 1, createdAt: 1 });
+  for (let i = 0; i < screens.length; i++) {
+    if (screens[i].order !== i + 1) {
+      await IntroScreen.findByIdAndUpdate(screens[i]._id, { order: i + 1 });
+    }
+  }
+};
+
+/**
  * CREATE INTRO SCREEN
  * POST /api/admin/intro-screens
  */
@@ -16,10 +28,24 @@ exports.createIntroScreen = async (req, res) => {
       });
     }
 
+    const totalCount = await IntroScreen.countDocuments();
+    let targetOrder = Number(order);
+
+    // If order is not given or invalid, place at end
+    if (!targetOrder || targetOrder < 1 || targetOrder > totalCount + 1) {
+      targetOrder = totalCount + 1;
+    }
+
+    // Auto-shift collision: any screen with order >= targetOrder shifts forward (+1)
+    await IntroScreen.updateMany(
+      { order: { $gte: targetOrder } },
+      { $inc: { order: 1 } }
+    );
+
     const introScreen = await IntroScreen.create({
       title,
       image,
-      order: order !== undefined ? order : 0,
+      order: targetOrder,
     });
 
     return res.status(201).json({
@@ -45,11 +71,27 @@ exports.createIntroScreen = async (req, res) => {
  */
 exports.getAllIntroScreens = async (req, res) => {
   try {
-    const introScreens = await IntroScreen.find()
-      .sort({
-        order: 1,
-        createdAt: 1,
-      });
+    let introScreens = await IntroScreen.find().sort({
+      order: 1,
+      createdAt: 1,
+    });
+
+    // Check and auto-clean any legacy duplicate orders in database
+    const orders = introScreens.map((s) => s.order);
+    const hasDuplicates =
+      new Set(orders).size !== orders.length ||
+      orders.some((o, i) => o !== i + 1);
+
+    if (hasDuplicates && introScreens.length > 0) {
+      for (let i = 0; i < introScreens.length; i++) {
+        if (introScreens[i].order !== i + 1) {
+          introScreens[i].order = i + 1;
+          await IntroScreen.findByIdAndUpdate(introScreens[i]._id, {
+            order: i + 1,
+          });
+        }
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -128,7 +170,31 @@ exports.updateIntroScreen = async (req, res) => {
     }
 
     if (order !== undefined) {
-      introScreen.order = order;
+      const oldOrder = introScreen.order;
+      const totalCount = await IntroScreen.countDocuments();
+      let targetOrder = Number(order);
+
+      if (targetOrder < 1) targetOrder = 1;
+      if (targetOrder > totalCount) targetOrder = totalCount;
+
+      if (targetOrder !== oldOrder) {
+        if (targetOrder < oldOrder) {
+          // Moving forward to an earlier step (e.g. step 5 -> step 2)
+          // Shift items between targetOrder and oldOrder - 1 by +1
+          await IntroScreen.updateMany(
+            { _id: { $ne: id }, order: { $gte: targetOrder, $lt: oldOrder } },
+            { $inc: { order: 1 } }
+          );
+        } else {
+          // Moving backward to a later step (e.g. step 2 -> step 5)
+          // Shift items between oldOrder + 1 and targetOrder by -1
+          await IntroScreen.updateMany(
+            { _id: { $ne: id }, order: { $gt: oldOrder, $lte: targetOrder } },
+            { $inc: { order: -1 } }
+          );
+        }
+        introScreen.order = targetOrder;
+      }
     }
 
     await introScreen.save();
@@ -166,6 +232,12 @@ exports.deleteIntroScreen = async (req, res) => {
         message: "Intro screen not found",
       });
     }
+
+    // Shift all subsequent screens down by -1 to maintain compact sequence
+    await IntroScreen.updateMany(
+      { order: { $gt: introScreen.order } },
+      { $inc: { order: -1 } }
+    );
 
     return res.status(200).json({
       success: true,
@@ -212,7 +284,7 @@ exports.reorderIntroScreens = async (req, res) => {
         IntroScreen.findByIdAndUpdate(
           item.id,
           {
-            order: item.order,
+            order: Number(item.order),
           },
           {
             runValidators: true,

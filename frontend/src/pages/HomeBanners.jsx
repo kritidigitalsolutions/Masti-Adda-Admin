@@ -590,7 +590,7 @@ export default function HomeBannersPage() {
                   return (
                     <tr key={banner._id}>
                       {/* Order Input */}
-                      <td style={{ textAlign: "center" }}>
+                      <td style={{ textAlign: "center" }} className="col-order">
                         <div className="order-pill-wrap" title="Click to edit display order">
                           <span className="order-hash">#</span>
                           <input
@@ -689,7 +689,7 @@ export default function HomeBannersPage() {
                       </td>
 
                       {/* Actions Column with Preview, Edit, Delete */}
-                      <td>
+                      <td style={{ textAlign: "center" }} className="col-actions">
                         <div className="tbl-actions" style={{ justifyContent: "center" }}>
                           <button
                             className="icon-btn"

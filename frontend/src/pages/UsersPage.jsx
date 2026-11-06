@@ -104,7 +104,7 @@ export default function UsersPage() {
 
   const fetchPlans = async () => {
     try {
-      const res = await API.get("/admin/plans");
+      const res = await API.get("/admin/plan");
       if (res.data.success) {
         setAvailablePlans(res.data.plans || []);
       }

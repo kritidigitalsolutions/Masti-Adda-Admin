@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Smartphone,
@@ -22,8 +22,10 @@ import {
   Link as LinkIcon,
   Wifi,
   Battery,
-  Signal
+  Signal,
+  UploadCloud
 } from "lucide-react";
+import { uploadToBunny } from "../features/services/bunnyUpload";
 import API from "../api/axios";
 import "./Dashboard.css";
 import "./IntroScreens.css";
@@ -46,6 +48,29 @@ export default function IntroScreensPage() {
   });
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Image Upload / Mode states
+  const [imageMode, setImageMode] = useState("file"); // "file" | "url"
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileInputRef = useRef(null);
+
+  const handleFileSelect = (file) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showAlert("Invalid File", "Please select a valid image file (PNG, JPG, WEBP).");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      showAlert("File Too Large", "Image size must be less than 10MB.");
+      return;
+    }
+    setSelectedFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setFilePreview(previewUrl);
+    setForm((p) => ({ ...p, image: previewUrl }));
+  };
 
   // Custom Confirmation Dialog State
   const [dialog, setDialog] = useState({
@@ -114,6 +139,10 @@ export default function IntroScreensPage() {
       order: maxOrder,
     });
     setEditId(null);
+    setImageMode("file");
+    setSelectedFile(null);
+    setFilePreview("");
+    setUploadProgress(0);
     setShowModal(true);
   };
 
@@ -124,25 +153,60 @@ export default function IntroScreensPage() {
       order: screen.order !== undefined ? screen.order : 0,
     });
     setEditId(screen._id);
+    setImageMode("file");
+    setSelectedFile(null);
+    setFilePreview(screen.image || "");
+    setUploadProgress(0);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setEditId(null);
+    setSelectedFile(null);
+    setFilePreview("");
+    setUploadProgress(0);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title.trim() || !form.image.trim()) {
-      return showAlert("Validation Error", "Title and Image URL are required.");
+    if (!form.title.trim()) {
+      return showAlert("Validation Error", "Title is required.");
+    }
+
+    let finalImageUrl = form.image.trim();
+
+    if (imageMode === "file") {
+      if (selectedFile) {
+        setLoading(true);
+        setUploadProgress(15);
+        try {
+          finalImageUrl = await uploadToBunny(
+            selectedFile,
+            "introscreens",
+            "banners",
+            (percent) => setUploadProgress(percent)
+          );
+        } catch (uploadErr) {
+          console.error("Bunny upload error:", uploadErr);
+          setLoading(false);
+          setUploadProgress(0);
+          return showAlert("Upload Error", "Failed to upload image. Please try again or paste image URL.");
+        }
+      } else if (!finalImageUrl) {
+        return showAlert("Validation Error", "Please select an image file to upload.");
+      }
+    } else {
+      if (!finalImageUrl) {
+        return showAlert("Validation Error", "Image URL is required.");
+      }
     }
 
     setLoading(true);
     try {
       const payload = {
         title: form.title.trim(),
-        image: form.image.trim(),
+        image: finalImageUrl,
         order: Number(form.order),
       };
 
@@ -159,6 +223,7 @@ export default function IntroScreensPage() {
       showAlert("Error", err.response?.data?.message || "Failed to save intro screen.");
     } finally {
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -647,56 +712,227 @@ export default function IntroScreensPage() {
                     </div>
                   </div>
 
-                  {/* Banner Image URL Input */}
+                  {/* Banner Image Selection Block */}
                   <div className="form-group" style={{ marginBottom: "16px" }}>
-                    <label className="form-label" style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                      Banner Image URL <span style={{ color: "var(--primary)" }}>*</span>
-                    </label>
-                    <div className="form-input-group">
-                      <LinkIcon size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
-                      <input
-                        type="text"
-                        placeholder="https://example.com/intro-screen-1.png"
-                        value={form.image}
-                        onChange={(e) => setForm(p => ({ ...p, image: e.target.value }))}
-                        required
-                      />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                      <label className="form-label" style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.5px", margin: 0 }}>
+                        Banner Image <span style={{ color: "var(--primary)" }}>*</span>
+                      </label>
+
+                      {/* Segmented Switch complying with project rule */}
+                      <div className="segmented-switch" style={{ padding: "3px", gap: "2px", borderRadius: "9999px" }}>
+                        <button
+                          type="button"
+                          className="segmented-switch-btn"
+                          onClick={() => setImageMode("file")}
+                          style={{
+                            padding: "4px 14px",
+                            fontSize: "0.74rem",
+                            color: imageMode === "file" ? "#000000" : undefined,
+                            fontWeight: imageMode === "file" ? 700 : 500,
+                            position: "relative"
+                          }}
+                        >
+                          {imageMode === "file" && (
+                            <motion.div
+                              layoutId="introImageModeTab"
+                              className="segmented-switch-active-bg"
+                              style={{
+                                background: "#FFD11A",
+                                borderRadius: "9999px",
+                                boxShadow: "0 2px 6px rgba(255, 209, 26, 0.35)"
+                              }}
+                              transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                            />
+                          )}
+                          <span className="segmented-switch-btn-text">
+                            <UploadCloud size={13} /> Upload File
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          className="segmented-switch-btn"
+                          onClick={() => setImageMode("url")}
+                          style={{
+                            padding: "4px 14px",
+                            fontSize: "0.74rem",
+                            color: imageMode === "url" ? "#000000" : undefined,
+                            fontWeight: imageMode === "url" ? 700 : 500,
+                            position: "relative"
+                          }}
+                        >
+                          {imageMode === "url" && (
+                            <motion.div
+                              layoutId="introImageModeTab"
+                              className="segmented-switch-active-bg"
+                              style={{
+                                background: "#FFD11A",
+                                borderRadius: "9999px",
+                                boxShadow: "0 2px 6px rgba(255, 209, 26, 0.35)"
+                              }}
+                              transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                            />
+                          )}
+                          <span className="segmented-switch-btn-text">
+                            <LinkIcon size={13} /> Paste URL
+                          </span>
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Enhanced Live Image Preview Card */}
-                    {form.image ? (
-                      <div className="intro-modal-preview-card">
-                        <div className="intro-modal-preview-header">
-                          <span className="intro-modal-preview-tag">
-                            <Eye size={11} /> LIVE PREVIEW
-                          </span>
-                          <button
-                            type="button"
-                            className="intro-modal-clear-btn"
-                            onClick={() => setForm(p => ({ ...p, image: "" }))}
-                            title="Clear Image URL"
-                          >
-                            <X size={12} /> Clear
-                          </button>
-                        </div>
-                        <div className="intro-modal-preview-body">
-                          <img
-                            src={form.image}
-                            alt="Screen Banner Preview"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.style.display = "none";
-                              const fallback = e.target.nextElementSibling;
-                              if (fallback) fallback.style.display = "flex";
-                            }}
-                          />
-                          <div className="intro-preview-fallback" style={{ display: "none" }}>
-                            <ImageIcon size={22} style={{ color: "var(--text-muted)", marginBottom: 4 }} />
-                            <span>Preview placeholder (paste direct image link)</span>
+                    {imageMode === "file" ? (
+                      /* Drag & Drop / File Input Zone */
+                      <div className="intro-upload-zone">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          accept="image/png,image/jpeg,image/webp,image/jpg"
+                          style={{ display: "none" }}
+                          onChange={(e) => handleFileSelect(e.target.files?.[0])}
+                        />
+
+                        {filePreview || form.image ? (
+                          <div className="intro-upload-preview-wrap">
+                            <img
+                              src={filePreview || form.image}
+                              alt="Selected banner"
+                              className="intro-upload-thumb"
+                            />
+                            <div className="intro-upload-info">
+                              <span className="intro-upload-filename">
+                                {selectedFile ? selectedFile.name : (editId ? "Current Banner Image" : "Image Selected")}
+                              </span>
+                              {selectedFile && (
+                                <span className="intro-upload-filesize">
+                                  {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready to upload
+                                </span>
+                              )}
+                              <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                                <button
+                                  type="button"
+                                  className="btn btn-ghost"
+                                  style={{ padding: "4px 10px", fontSize: "0.75rem" }}
+                                  onClick={() => fileInputRef.current?.click()}
+                                >
+                                  <RefreshCw size={12} /> Replace File
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-ghost"
+                                  style={{ padding: "4px 10px", fontSize: "0.75rem", color: "#F43F5E" }}
+                                  onClick={() => {
+                                    setSelectedFile(null);
+                                    setFilePreview("");
+                                    setForm(p => ({ ...p, image: "" }));
+                                    if (fileInputRef.current) fileInputRef.current.value = "";
+                                  }}
+                                >
+                                  <X size={12} /> Remove
+                                </button>
+                              </div>
+                            </div>
                           </div>
-                        </div>
+                        ) : (
+                          <div
+                            className="intro-dropzone"
+                            onClick={() => fileInputRef.current?.click()}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              if (e.dataTransfer.files?.[0]) {
+                                handleFileSelect(e.dataTransfer.files[0]);
+                              }
+                            }}
+                          >
+                            <div className="intro-dropzone-icon">
+                              <UploadCloud size={24} />
+                            </div>
+                            <div className="intro-dropzone-text">
+                              <strong>Click to choose image</strong> or drag and drop here
+                            </div>
+                            <span className="intro-dropzone-sub">
+                              Supports PNG, JPG, or WEBP (up to 10MB)
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Upload Progress Bar when uploading to Bunny */}
+                        {uploadProgress > 0 && uploadProgress < 100 && (
+                          <div style={{ marginTop: 10 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.74rem", color: "var(--text-muted)", marginBottom: 4 }}>
+                              <span>Uploading to Bunny CDN...</span>
+                              <span style={{ fontWeight: 600, color: "var(--primary)" }}>{uploadProgress}%</span>
+                            </div>
+                            <div style={{ width: "100%", height: 6, background: "var(--bg3)", borderRadius: 4, overflow: "hidden" }}>
+                              <div
+                                style={{
+                                  width: `${uploadProgress}%`,
+                                  height: "100%",
+                                  background: "var(--primary)",
+                                  transition: "width 0.2s ease"
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    ) : null}
+                    ) : (
+                      /* URL Input Mode */
+                      <>
+                        <div className="form-input-group">
+                          <LinkIcon size={15} style={{ color: "var(--text-muted)", flexShrink: 0 }} />
+                          <input
+                            type="text"
+                            placeholder="https://example.com/intro-screen-1.png"
+                            value={form.image}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setForm(p => ({ ...p, image: val }));
+                              setFilePreview(val);
+                            }}
+                            required={imageMode === "url"}
+                          />
+                        </div>
+
+                        {form.image ? (
+                          <div className="intro-modal-preview-card" style={{ marginTop: 12 }}>
+                            <div className="intro-modal-preview-header">
+                              <span className="intro-modal-preview-tag">
+                                <Eye size={11} /> LIVE PREVIEW
+                              </span>
+                              <button
+                                type="button"
+                                className="intro-modal-clear-btn"
+                                onClick={() => {
+                                  setForm(p => ({ ...p, image: "" }));
+                                  setFilePreview("");
+                                }}
+                                title="Clear Image URL"
+                              >
+                                <X size={12} /> Clear
+                              </button>
+                            </div>
+                            <div className="intro-modal-preview-body">
+                              <img
+                                src={form.image}
+                                alt="Screen Banner Preview"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.style.display = "none";
+                                  const fallback = e.target.nextElementSibling;
+                                  if (fallback) fallback.style.display = "flex";
+                                }}
+                              />
+                              <div className="intro-preview-fallback" style={{ display: "none" }}>
+                                <ImageIcon size={22} style={{ color: "var(--text-muted)", marginBottom: 4 }} />
+                                <span>Preview placeholder (paste direct image link)</span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+                      </>
+                    )}
                   </div>
 
                   {/* Display Order Input */}
@@ -714,7 +950,7 @@ export default function IntroScreensPage() {
                       />
                     </div>
                     <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '6px 0 0 0', lineHeight: 1.4 }}>
-                      Lower order numbers appear first in the mobile app onboarding walkthrough.
+                      Lower order numbers appear first. If a used step number is entered, existing screens will automatically shift forward.
                     </p>
                   </div>
                 </div>
@@ -726,7 +962,7 @@ export default function IntroScreensPage() {
                   <button 
                     type="submit" 
                     className="btn btn-primary" 
-                    disabled={loading || !form.title.trim() || !form.image.trim()}
+                    disabled={loading || !form.title.trim() || !(imageMode === "file" ? (selectedFile || form.image.trim()) : form.image.trim())}
                     style={{ padding: "8px 22px", fontSize: "0.84rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6 }}
                   >
                     <Sparkles size={14} />

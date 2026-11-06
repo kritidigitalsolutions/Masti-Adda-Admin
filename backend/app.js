@@ -322,6 +322,7 @@ const adminPlanRoutes = require("./routes/admin/plan.routes");
 const userPlanRoutes = require("./routes/user/plan.routes");
 
 app.use("/api/admin/plan", adminPlanRoutes);
+app.use("/api/admin/plans", adminPlanRoutes);
 app.use("/api/plan", userPlanRoutes);
 app.use("/api/plans", userPlanRoutes);
 

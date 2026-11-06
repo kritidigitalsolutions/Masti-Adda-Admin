@@ -56,6 +56,24 @@ body.light .banner-header-badge {
   white-space: nowrap;
 }
 
+/* Specifically remove ellipsis dots from Order and Actions columns */
+.tbl-banners td.col-order,
+.tbl-banners td.col-actions,
+.tbl-banners td:first-child,
+.tbl-banners td:last-child {
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.tbl-banners .tbl-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
 /* Integrated Order Pill Component */
 .order-pill-wrap {
   display: inline-flex;
