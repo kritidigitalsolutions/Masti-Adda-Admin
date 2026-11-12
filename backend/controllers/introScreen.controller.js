@@ -11,7 +11,8 @@ exports.getActiveIntroScreens = async (req, res) => {
         order: 1,
         createdAt: 1,
       })
-      .select("_id title image order");
+      .select("_id title image order")
+      .lean();
 
     return res.status(200).json({
       success: true,

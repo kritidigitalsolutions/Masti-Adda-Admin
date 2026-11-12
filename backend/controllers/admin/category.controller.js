@@ -1,5 +1,19 @@
 const Category = require("../../models/category.model");
 
+/**
+ * Normalizes all category priorities to be strictly sequential 1, 2, 3...
+ */
+const normalizeCategoryPriorities = async () => {
+  const categories = await Category.find().sort({ priority: 1, createdAt: 1 });
+  for (let i = 0; i < categories.length; i++) {
+    if (categories[i].priority !== i + 1) {
+      await Category.findByIdAndUpdate(categories[i]._id, { priority: i + 1 });
+      categories[i].priority = i + 1;
+    }
+  }
+  return categories;
+};
+
 // ========================================
 // CREATE CATEGORY
 // ========================================
@@ -16,25 +30,24 @@ exports.createCategory = async (req, res) => {
       return res.status(409).json({ success: false, message: "Category with this name already exists" });
     }
 
-    let newPriority = parseInt(priority, 10);
-    const maxCat = await Category.findOne().sort({ priority: -1 });
-    const maxPriority = maxCat && maxCat.priority ? maxCat.priority : 0;
+    const totalCount = await Category.countDocuments();
+    let targetPriority = parseInt(priority, 10);
 
-    if (isNaN(newPriority) || newPriority < 1) {
-      newPriority = maxPriority + 1;
-    } else if (newPriority <= maxPriority) {
-      await Category.updateMany(
-        { priority: { $gte: newPriority } },
-        { $inc: { priority: 1 } }
-      );
-    } else if (newPriority > maxPriority + 1) {
-      newPriority = maxPriority + 1;
+    if (isNaN(targetPriority) || targetPriority < 1 || targetPriority > totalCount + 1) {
+      targetPriority = totalCount + 1;
     }
 
-    const categoryData = { name, priority: newPriority };
+    // Auto-shift collision: any category with priority >= targetPriority shifts forward (+1)
+    await Category.updateMany(
+      { priority: { $gte: targetPriority } },
+      { $inc: { priority: 1 } }
+    );
+
+    const categoryData = { name, priority: targetPriority };
     if (isActive !== undefined) categoryData.isActive = isActive === true || isActive === "true";
-    
+
     const category = await Category.create(categoryData);
+    await normalizeCategoryPriorities();
 
     return res.status(201).json({
       success: true,
@@ -59,7 +72,27 @@ exports.createCategory = async (req, res) => {
 // ========================================
 exports.getAllCategories = async (req, res) => {
   try {
-    const categories = await Category.find().select("_id name slug priority isActive createdAt curatedContent").sort({ priority: 1, name: 1 });
+    let categories = await Category.find()
+      .select("_id name slug priority isActive createdAt curatedContent")
+      .sort({ priority: 1, createdAt: 1 })
+      .lean();
+
+    // Check and auto-clean any legacy duplicate or non-sequential priorities in database
+    const priorities = categories.map((c) => c.priority);
+    const hasDuplicatesOrGaps =
+      new Set(priorities).size !== priorities.length ||
+      priorities.some((p, i) => p !== i + 1);
+
+    if (hasDuplicatesOrGaps && categories.length > 0) {
+      for (let i = 0; i < categories.length; i++) {
+        if (categories[i].priority !== i + 1) {
+          categories[i].priority = i + 1;
+          await Category.findByIdAndUpdate(categories[i]._id, {
+            priority: i + 1,
+          });
+        }
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -79,7 +112,7 @@ exports.getAllCategories = async (req, res) => {
 // ========================================
 exports.getCategoryById = async (req, res) => {
   try {
-    const category = await Category.findById(req.params.id);
+    const category = await Category.findById(req.params.id).lean();
     if (!category) {
       return res.status(404).json({ success: false, message: "Category not found" });
     }
@@ -110,30 +143,35 @@ exports.updateCategory = async (req, res) => {
     if (isActive !== undefined) category.isActive = isActive === true || isActive === "true";
 
     if (priority !== undefined) {
-      let newPriority = parseInt(priority, 10);
-      let oldPriority = category.priority;
-      if (!isNaN(newPriority) && newPriority !== oldPriority && newPriority > 0) {
-        const maxCat = await Category.findOne().sort({ priority: -1 });
-        const maxPriority = maxCat && maxCat.priority ? maxCat.priority : 0;
-        if (newPriority > maxPriority) newPriority = maxPriority;
+      const oldPriority = category.priority;
+      const totalCount = await Category.countDocuments();
+      let targetPriority = parseInt(priority, 10);
 
-        if (newPriority < oldPriority) {
+      if (isNaN(targetPriority) || targetPriority < 1) targetPriority = 1;
+      if (targetPriority > totalCount) targetPriority = totalCount;
+
+      if (targetPriority !== oldPriority) {
+        if (targetPriority < oldPriority) {
+          // Moving forward to higher priority (e.g. 5 -> 2)
+          // Shift items between targetPriority and oldPriority - 1 by +1
           await Category.updateMany(
-            { priority: { $gte: newPriority, $lt: oldPriority } },
+            { _id: { $ne: req.params.id }, priority: { $gte: targetPriority, $lt: oldPriority } },
             { $inc: { priority: 1 } }
           );
-        } else if (newPriority > oldPriority) {
+        } else {
+          // Moving backward to lower priority (e.g. 2 -> 5)
+          // Shift items between oldPriority + 1 and targetPriority by -1
           await Category.updateMany(
-            { priority: { $gt: oldPriority, $lte: newPriority } },
+            { _id: { $ne: req.params.id }, priority: { $gt: oldPriority, $lte: targetPriority } },
             { $inc: { priority: -1 } }
           );
         }
-        category.priority = newPriority;
+        category.priority = targetPriority;
       }
     }
-    if (isActive !== undefined) category.isActive = isActive === true || isActive === "true";
 
     await category.save();
+    await normalizeCategoryPriorities();
 
     return res.status(200).json({
       success: true,
@@ -163,15 +201,8 @@ exports.deleteCategory = async (req, res) => {
       return res.status(404).json({ success: false, message: "Category not found" });
     }
 
-    const deletedPriority = category.priority;
     await Category.findByIdAndDelete(req.params.id);
-
-    if (deletedPriority) {
-      await Category.updateMany(
-        { priority: { $gt: deletedPriority } },
-        { $inc: { priority: -1 } }
-      );
-    }
+    await normalizeCategoryPriorities();
 
     return res.status(200).json({
       success: true,

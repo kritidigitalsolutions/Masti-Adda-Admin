@@ -20,11 +20,11 @@ const createCategory = async (data) => {
 };
 
 const getCategories = async (filter = {}) => {
-  return await AudioCategory.find(filter).sort({ priority: 1, createdAt: -1 });
+  return await AudioCategory.find(filter).sort({ priority: 1, createdAt: -1 }).lean();
 };
 
 const getCategoryById = async (id) => {
-  return await AudioCategory.findById(id);
+  return await AudioCategory.findById(id).lean();
 };
 
 const updateCategory = async (id, data) => {

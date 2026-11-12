@@ -56,26 +56,29 @@ exports.getAllUsers = async (
             }
         }
 
-        const totalUsers = await User.countDocuments(dbQuery);
-        const totalActive = await User.countDocuments({ status: { $ne: "Blocked" } });
-        const totalBlocked = await User.countDocuments({ status: "Blocked" });
-
-        const users = await User.find(dbQuery)
-            .select("-__v")
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
+        // Run counts and page data query concurrently (Promise.all) for maximum speed
+        const [totalUsers, totalActive, totalBlocked, users] = await Promise.all([
+            User.countDocuments(dbQuery),
+            User.countDocuments({ status: { $ne: "Blocked" } }),
+            User.countDocuments({ status: "Blocked" }),
+            User.find(dbQuery)
+                .select("-__v")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+        ]);
 
         const userIds = users.map(user => user._id);
         const subscriptions = await Subscription.find({
             user: { $in: userIds },
             status: "active"
-        }).populate("plan");
+        }).populate("plan").lean();
 
         const usersWithPlans = users.map(user => {
             const activeSub = subscriptions.find(sub => sub.user.toString() === user._id.toString());
             return {
-                ...user.toObject(),
+                ...(user.toObject ? user.toObject() : user),
                 plan: activeSub && activeSub.plan ? activeSub.plan.name : "Free"
             };
         });

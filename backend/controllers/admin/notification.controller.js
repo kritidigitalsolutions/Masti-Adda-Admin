@@ -101,7 +101,8 @@ exports.getNotifications = exports.getAllNotifications = async (req, res) => {
     const notifications = await Notification.find()
       .populate("targetUser", "name email phone")
       .populate("createdBy", "name email")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({
       success: true,
@@ -143,7 +144,8 @@ exports.getNotificationById = async (req, res) => {
   try {
     const notification = await Notification.findById(req.params.id)
       .populate("targetUser", "name email phone")
-      .populate("createdBy", "name email");
+      .populate("createdBy", "name email")
+      .lean();
 
     if (!notification) {
       return res.status(404).json({

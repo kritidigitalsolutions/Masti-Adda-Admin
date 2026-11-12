@@ -125,7 +125,7 @@ exports.deletePlan = async (req, res) => {
 // GET ALL PLANS (ADMIN)
 exports.getAllPlans = async (req, res) => {
   try {
-    const plans = await Plan.find().sort({ createdAt: -1 });
+    const plans = await Plan.find().sort({ createdAt: -1 }).lean();
 
     res.json({
       success: true,

@@ -2,7 +2,7 @@ const CompanyInfo = require("../../models/companyInfo.model");
 
 const getCompanyInfo = async (req, res) => {
   try {
-    const companyInfo = await CompanyInfo.findOne();
+    const companyInfo = await CompanyInfo.findOne().lean();
 
     return res.status(200).json({
       success: true,

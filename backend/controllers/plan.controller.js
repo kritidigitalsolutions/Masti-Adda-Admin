@@ -12,7 +12,8 @@ exports.getPlans = async (req, res) => {
     }
 
     const plans = await Plan.find(filter)
-      .sort({ sortOrder: 1, createdAt: -1 });
+      .sort({ sortOrder: 1, createdAt: -1 })
+      .lean();
 
     res.json({
       success: true,

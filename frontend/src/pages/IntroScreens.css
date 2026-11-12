@@ -641,3 +641,52 @@ body.light .intro-upload-preview-wrap {
   color: var(--text-muted);
   margin-top: 2px;
 }
+
+/* =========================================================
+   Intro Screens Table View Styles (Clean & Non-overlapping)
+========================================================= */
+.tbl-intro {
+  width: 100%;
+  table-layout: fixed !important;
+}
+
+.tbl-intro th,
+.tbl-intro td {
+  vertical-align: middle;
+}
+
+.intro-tbl-title {
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.intro-tbl-url {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-family: monospace, SFMono-Regular, Consolas, monospace;
+  color: var(--text-muted);
+  vertical-align: middle;
+}
+
+body.light .intro-tbl-url {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.tbl-intro td.col-actions {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: nowrap;
+}

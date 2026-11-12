@@ -29,11 +29,11 @@ const createEpisode = async (data) => {
 };
 
 const getEpisodes = async (filter = {}) => {
-  return await AudioEpisode.find(filter).sort({ episodeNumber: 1 });
+  return await AudioEpisode.find(filter).sort({ episodeNumber: 1 }).lean();
 };
 
 const getEpisodeById = async (id) => {
-  return await AudioEpisode.findById(id);
+  return await AudioEpisode.findById(id).lean();
 };
 
 const updateEpisode = async (id, data) => {

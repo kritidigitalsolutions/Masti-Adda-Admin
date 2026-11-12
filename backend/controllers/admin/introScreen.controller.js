@@ -118,7 +118,7 @@ exports.getIntroScreenById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const introScreen = await IntroScreen.findById(id);
+    const introScreen = await IntroScreen.findById(id).lean();
 
     if (!introScreen) {
       return res.status(404).json({

@@ -70,6 +70,30 @@ const populateAndFilterItems = async (items, attachEpisodes = false) => {
 
   const result = [];
 
+  // Batch-fetch all episodes for all visible series in ONE single query (fixes N+1 DB round-trips)
+  const seriesSeasonsMap = {};
+  if (attachEpisodes) {
+    const visibleSeriesIds = Object.keys(contentMap).filter((id) => contentMap[id].type === "series");
+    if (visibleSeriesIds.length > 0) {
+      try {
+        const allEpisodes = await Episode.find({ series: { $in: visibleSeriesIds } })
+          .sort({ season: 1, episodeNumber: 1 })
+          .lean();
+
+        for (const ep of allEpisodes) {
+          const sId = ep.series?.toString();
+          if (!sId) continue;
+          if (!seriesSeasonsMap[sId]) seriesSeasonsMap[sId] = {};
+          const sn = ep.season || 1;
+          if (!seriesSeasonsMap[sId][sn]) seriesSeasonsMap[sId][sn] = [];
+          seriesSeasonsMap[sId][sn].push(ep);
+        }
+      } catch (err) {
+        console.error("Batch fetch episodes error in layout:", err);
+      }
+    }
+  }
+
   for (const item of items) {
     const id = (item.contentId?._id || item.contentId)?.toString();
     const found = contentMap[id];
@@ -78,7 +102,13 @@ const populateAndFilterItems = async (items, attachEpisodes = false) => {
     let doc = { ...found };
 
     if (attachEpisodes && found.type === "series") {
-      doc = await attachEpisodesToSeries(doc);
+      const seasonsMap = seriesSeasonsMap[id] || {};
+      doc.seasons = Object.keys(seasonsMap)
+        .sort((a, b) => Number(a) - Number(b))
+        .map((sn) => ({
+          seasonNumber: Number(sn),
+          episodes: seasonsMap[sn],
+        }));
     }
 
     result.push(doc);

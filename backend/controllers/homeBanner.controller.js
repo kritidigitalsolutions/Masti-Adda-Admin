@@ -43,7 +43,7 @@ exports.getActiveHomeBanners = async (req, res) => {
     }).sort({
       order: 1,
       createdAt: 1,
-    });
+    }).lean();
 
     const banners = await populateHomeBanners(rawBanners);
 

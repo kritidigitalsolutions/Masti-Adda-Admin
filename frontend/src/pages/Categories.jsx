@@ -240,6 +240,7 @@ export default function Category() {
         priority: newPriority,
         isActive: cat.isActive
       });
+      fetchCategories();
     } catch (err) {
       // Rollback on failure
       setCategories(prev =>

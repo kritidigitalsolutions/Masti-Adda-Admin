@@ -131,7 +131,7 @@ exports.getAllHomeBanners = async (req, res) => {
     const rawBanners = await HomeBanner.find().sort({
       order: 1,
       createdAt: 1,
-    });
+    }).lean();
 
     const banners = await populateHomeBanners(rawBanners);
 
@@ -153,7 +153,7 @@ exports.getAllHomeBanners = async (req, res) => {
 
 exports.getHomeBannerById = async (req, res) => {
   try {
-    const rawBanner = await HomeBanner.findById(req.params.id);
+    const rawBanner = await HomeBanner.findById(req.params.id).lean();
 
     if (!rawBanner) {
       return res.status(404).json({

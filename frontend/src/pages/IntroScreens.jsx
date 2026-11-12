@@ -519,21 +519,21 @@ export default function IntroScreensPage() {
         ) : (
           /* Table View */
           <div className="tbl-wrap">
-            <table className="tbl tbl-categories" style={{ tableLayout: "fixed", minWidth: "760px" }}>
+            <table className="tbl tbl-intro" style={{ minWidth: "760px" }}>
               <thead>
                 <tr>
                   <th style={{ width: "95px", textAlign: "center" }}># ORDER</th>
                   <th style={{ width: "80px", textAlign: "center" }}>PREVIEW</th>
-                  <th style={{ width: "220px" }}>TITLE</th>
+                  <th style={{ width: "240px" }}>TITLE</th>
                   <th>IMAGE URL</th>
-                  <th style={{ width: "150px", textAlign: "center" }}>ACTIONS</th>
+                  <th style={{ width: "140px", textAlign: "center" }}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredScreens.map((screen, index) => (
                   <tr key={screen._id}>
                     {/* Order Controls */}
-                    <td style={{ textAlign: "center" }}>
+                    <td style={{ textAlign: "center" }} className="col-order">
                       <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                         <span style={{ fontWeight: 700, color: "var(--primary)", fontSize: "0.88rem" }}>
                           #{screen.order}
@@ -562,7 +562,7 @@ export default function IntroScreensPage() {
                     </td>
 
                     {/* Image Thumbnail */}
-                    <td style={{ textAlign: "center" }}>
+                    <td style={{ textAlign: "center" }} className="col-preview">
                       {screen.image ? (
                         <img
                           src={screen.image}
@@ -602,20 +602,20 @@ export default function IntroScreensPage() {
                     </td>
 
                     {/* Title */}
-                    <td style={{ fontWeight: 600, color: "var(--text)" }}>
+                    <td className="intro-tbl-title" title={screen.title}>
                       {screen.title}
                     </td>
 
                     {/* Image URL */}
-                    <td>
-                      <span className="cat-slug-badge" title={screen.image} style={{ maxWidth: "340px" }}>
+                    <td style={{ overflow: "hidden" }}>
+                      <span className="intro-tbl-url" title={screen.image}>
                         {screen.image}
                       </span>
                     </td>
 
                     {/* Actions */}
-                    <td style={{ textAlign: "center" }}>
-                      <div className="tbl-actions" style={{ justifyContent: "center", gap: "6px" }}>
+                    <td style={{ textAlign: "center" }} className="col-actions">
+                      <div className="tbl-actions" style={{ justifyContent: "center", gap: "6px", flexWrap: "nowrap" }}>
                         <button
                           className="icon-btn view"
                           onClick={() => setPreviewScreen(screen)}
