@@ -23,7 +23,9 @@ import {
   Wifi,
   Battery,
   Signal,
-  UploadCloud
+  UploadCloud,
+  Copy,
+  Check
 } from "lucide-react";
 import { uploadToBunny } from "../features/services/bunnyUpload";
 import API from "../api/axios";
@@ -55,6 +57,17 @@ export default function IntroScreensPage() {
   const [filePreview, setFilePreview] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef(null);
+  const [copiedId, setCopiedId] = useState(null);
+
+  const getShortAsset = (url) => {
+    if (!url) return "No Image";
+    try {
+      const parts = url.split("/");
+      return parts[parts.length - 1];
+    } catch {
+      return url;
+    }
+  };
 
   const handleFileSelect = (file) => {
     if (!file) return;
@@ -522,11 +535,11 @@ export default function IntroScreensPage() {
             <table className="tbl tbl-intro" style={{ minWidth: "760px" }}>
               <thead>
                 <tr>
-                  <th style={{ width: "95px", textAlign: "center" }}># ORDER</th>
+                  <th style={{ width: "90px", textAlign: "center" }}># ORDER</th>
                   <th style={{ width: "80px", textAlign: "center" }}>PREVIEW</th>
-                  <th style={{ width: "240px" }}>TITLE</th>
-                  <th>IMAGE URL</th>
-                  <th style={{ width: "140px", textAlign: "center" }}>ACTIONS</th>
+                  <th>TITLE</th>
+                  <th style={{ width: "220px" }}>IMAGE ASSET</th>
+                  <th style={{ width: "130px", textAlign: "center" }}>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
@@ -606,11 +619,25 @@ export default function IntroScreensPage() {
                       {screen.title}
                     </td>
 
-                    {/* Image URL */}
+                    {/* Image Asset Pill */}
                     <td style={{ overflow: "hidden" }}>
-                      <span className="intro-tbl-url" title={screen.image}>
-                        {screen.image}
-                      </span>
+                      <div className="intro-tbl-asset-pill" title={screen.image}>
+                        <LinkIcon size={12} className="intro-asset-icon" />
+                        <span className="intro-asset-filename">{getShortAsset(screen.image)}</span>
+                        <button
+                          type="button"
+                          className="intro-copy-url-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(screen.image);
+                            setCopiedId(screen._id);
+                            setTimeout(() => setCopiedId(null), 1500);
+                          }}
+                          title="Copy Image URL"
+                        >
+                          {copiedId === screen._id ? <Check size={11} color="#10B981" /> : <Copy size={11} />}
+                        </button>
+                      </div>
                     </td>
 
                     {/* Actions */}

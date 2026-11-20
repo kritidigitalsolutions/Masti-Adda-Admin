@@ -648,11 +648,13 @@ body.light .intro-upload-preview-wrap {
 .tbl-intro {
   width: 100%;
   table-layout: fixed !important;
+  border-collapse: collapse;
 }
 
 .tbl-intro th,
 .tbl-intro td {
   vertical-align: middle;
+  padding: 13px 14px;
 }
 
 .intro-tbl-title {
@@ -661,32 +663,80 @@ body.light .intro-upload-preview-wrap {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.88rem;
 }
 
-.intro-tbl-url {
-  display: inline-block;
+/* Compact Asset Pill */
+.intro-tbl-asset-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   background: var(--bg3);
   border: 1px solid var(--border);
-  padding: 3px 10px;
-  border-radius: 6px;
+  padding: 4px 8px 4px 10px;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+body.light .intro-tbl-asset-pill {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.intro-asset-icon {
+  color: var(--primary, #FFD11A);
+  flex-shrink: 0;
+}
+
+.intro-asset-filename {
   font-size: 0.76rem;
   font-family: monospace, SFMono-Regular, Consolas, monospace;
   color: var(--text-muted);
-  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 130px;
 }
 
-body.light .intro-tbl-url {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
+body.light .intro-asset-filename {
   color: #475569;
+}
+
+.intro-copy-url-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.intro-copy-url-btn:hover {
+  background: var(--bg2, rgba(255, 255, 255, 0.1));
+  color: var(--text);
+}
+
+body.light .intro-copy-url-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 .tbl-intro td.col-actions {
   overflow: visible !important;
   text-overflow: clip !important;
   white-space: nowrap;
+}
+
+.tbl-intro td.col-actions .tbl-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: nowrap;
 }
