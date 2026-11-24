@@ -360,8 +360,8 @@ export default function AddAIReels() {
               {videoFile
                 ? formatFileSize(videoFile.size)
                 : form.videoUrl
-                ? "Direct URL"
-                : "Not Selected"}
+                  ? "Direct URL"
+                  : "Not Selected"}
             </span>
           </div>
           <span className={`readiness-badge ${isVideoValid ? "ready" : "pending"}`}>
@@ -377,8 +377,8 @@ export default function AddAIReels() {
               {thumbnailFile
                 ? formatFileSize(thumbnailFile.size)
                 : form.thumbnailUrl
-                ? "Direct URL"
-                : "Not Selected"}
+                  ? "Direct URL"
+                  : "Not Selected"}
             </span>
           </div>
           <span className={`readiness-badge ${isThumbValid ? "ready" : "pending"}`}>
@@ -1028,10 +1028,10 @@ export default function AddAIReels() {
                   {uploadPhase === "thumbnail"
                     ? "Uploading poster cover image to Bunny CDN..."
                     : uploadPhase === "video"
-                    ? "Uploading 9:16 vertical video stream to Bunny CDN..."
-                    : uploadPhase === "saving"
-                    ? "Registering reel entry in catalog database..."
-                    : "Connecting to Bunny CDN storage pipeline..."}
+                      ? "Uploading 9:16 vertical video stream to Bunny CDN..."
+                      : uploadPhase === "saving"
+                        ? "Registering reel entry in catalog database..."
+                        : "Connecting to Bunny CDN storage pipeline..."}
                 </p>
 
                 <div className="popup-upload-status">

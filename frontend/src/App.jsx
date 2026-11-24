@@ -11,6 +11,7 @@ import ResetPassword from "./pages/ResetPassword";
 // ── Lazy Loaded Dashboard Pages ──
 const DashboardHome = lazy(() => import("./pages/Dashboard"));
 const UsersPage = lazy(() => import("./pages/UsersPage"));
+const DeleteAccountRequestsPage = lazy(() => import("./pages/DeleteAccountRequests"));
 const AddContent = lazy(() => import("./pages/AddContent"));
 const Content = lazy(() => import("./pages/Content"));
 // const RatingsPage = lazy(() => import("./pages/Ratings"));
@@ -106,6 +107,7 @@ function App() {
             {/* Nested Dashboard Routes */}
             <Route index element={<DashboardHome />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="delete-account-requests" element={<DeleteAccountRequestsPage />} />
             <Route path="add-content" element={<AddContent />} />
             <Route path="content" element={<Content />} />
             {/* <Route path="ratings" element={<RatingsPage />} /> */}

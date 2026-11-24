@@ -143,9 +143,12 @@ export default function NotificationsPage() {
   }, []);
 
   // ── Fetch users for searchable dropdown ───────────────────────────────
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (search = "") => {
     try {
-      const res = await API.get("/admin/users");
+      const url = search
+        ? `/admin/users?limit=100&search=${encodeURIComponent(search)}`
+        : "/admin/users?limit=1000";
+      const res = await API.get(url);
       setUsers(res.data.users || res.data.data || []);
     } catch {
       // Non-critical — fallback to empty list
@@ -184,6 +187,18 @@ export default function NotificationsPage() {
     fetchUsers();
     fetchResources();
   }, [fetchNotifications, fetchUsers, fetchResources]);
+
+  // ── Debounced Server Search for Specific User ─────────────────────────
+  useEffect(() => {
+    if (form.sendTo === "Specific User" && form.userSearch.trim()) {
+      const timer = setTimeout(() => {
+        fetchUsers(form.userSearch.trim());
+      }, 300);
+      return () => clearTimeout(timer);
+    } else if (form.sendTo === "Specific User" && !form.userSearch.trim()) {
+      fetchUsers();
+    }
+  }, [form.userSearch, form.sendTo, fetchUsers]);
 
   // ── Form input change ─────────────────────────────────────────────────
   const ch = (e) => setForm({ ...form, [e.target.name]: e.target.value });

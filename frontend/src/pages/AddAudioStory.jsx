@@ -232,13 +232,13 @@ export default function AddAudioStory() {
         episodes: f.episodes.map((ep, j) =>
           j === editingEpIndex
             ? {
-                ...ep,
-                title: epForm.title,
-                duration: epForm.duration,
-                description: epForm.description,
-                audioUrl: epForm.audioUrl || "",
-                thumbnailUrl: epForm.thumbnailUrl || "",
-              }
+              ...ep,
+              title: epForm.title,
+              duration: epForm.duration,
+              description: epForm.description,
+              audioUrl: epForm.audioUrl || "",
+              thumbnailUrl: epForm.thumbnailUrl || "",
+            }
             : ep
         ),
       }));
@@ -431,9 +431,8 @@ export default function AddAudioStory() {
             </div>
           </div>
           <span
-            className={`readiness-badge ${
-              selectedCategoriesCount > 0 ? "ready" : "neutral"
-            }`}
+            className={`readiness-badge ${selectedCategoriesCount > 0 ? "ready" : "neutral"
+              }`}
           >
             {selectedCategoriesCount > 0 && <Check size={13} />}
             {selectedCategoriesCount > 0 ? "Configured" : "Optional"}
@@ -448,16 +447,15 @@ export default function AddAudioStory() {
               {hasCover && hasBanner
                 ? "Cover & Banner Ready"
                 : hasCover
-                ? "Cover Ready"
-                : hasBanner
-                ? "Banner Ready"
-                : "No Artwork"}
+                  ? "Cover Ready"
+                  : hasBanner
+                    ? "Banner Ready"
+                    : "No Artwork"}
             </div>
           </div>
           <span
-            className={`readiness-badge ${
-              hasCover && hasBanner ? "ready" : hasCover ? "pending" : "neutral"
-            }`}
+            className={`readiness-badge ${hasCover && hasBanner ? "ready" : hasCover ? "pending" : "neutral"
+              }`}
           >
             {hasCover ? <Check size={13} /> : <ImageIcon size={13} />}
             {hasCover && hasBanner ? "Complete" : hasCover ? "Partial" : "Pending"}
@@ -618,8 +616,8 @@ export default function AddAudioStory() {
                           let current = Array.isArray(form.categories)
                             ? [...form.categories]
                             : form.categories
-                            ? [form.categories]
-                            : [];
+                              ? [form.categories]
+                              : [];
                           if (current.includes(cat._id)) {
                             current = current.filter((id) => id !== cat._id);
                           } else {
@@ -812,15 +810,14 @@ export default function AddAudioStory() {
                                 </span>
                               )}
                               <span
-                                className={`ep-audio-pill ${
-                                  hasAudio ? "added" : "none"
-                                }`}
+                                className={`ep-audio-pill ${hasAudio ? "added" : "none"
+                                  }`}
                               >
                                 {localAudio
                                   ? "Audio File Attached"
                                   : ep.audioUrl
-                                  ? "Stream URL Linked"
-                                  : "No Audio"}
+                                    ? "Stream URL Linked"
+                                    : "No Audio"}
                               </span>
                             </div>
                           </div>
@@ -1337,8 +1334,8 @@ export default function AddAudioStory() {
                     {modalAudioFile
                       ? modalAudioFile.name
                       : epForm.audioUrl
-                      ? "URL Linked"
-                      : "No file chosen"}
+                        ? "URL Linked"
+                        : "No file chosen"}
                   </span>
                 </div>
 
@@ -1407,8 +1404,8 @@ export default function AddAudioStory() {
                     {modalThumbFile
                       ? modalThumbFile.name
                       : epForm.thumbnailUrl
-                      ? "URL Linked"
-                      : "No image chosen"}
+                        ? "URL Linked"
+                        : "No image chosen"}
                   </span>
                 </div>
 

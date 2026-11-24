@@ -1,0 +1,733 @@
+/* =========================================================
+   Delete Account Requests - GoliDoli Pixel-Perfect Match
+   Masti Adda OTT Admin Dashboard
+========================================================= */
+
+.del-requests-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---------- Header ---------- */
+.del-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.del-header-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.del-page-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text, #0f172a);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+body.light .del-page-title {
+  color: #0f172a;
+}
+
+.del-title-icon {
+  color: #ea580c;
+  display: inline-flex;
+  align-items: center;
+}
+
+.del-page-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+/* Refresh Button */
+.del-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg2, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  color: var(--text, #0f172a);
+  padding: 8px 16px;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+body.light .del-refresh-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.del-refresh-btn:hover {
+  background: var(--bg3, #f8fafc);
+  border-color: #94a3b8;
+}
+
+/* ---------- Top KPI Grid (4 Cards in a Row) ---------- */
+.del-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1100px) {
+  .del-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .del-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.del-kpi-card {
+  background: var(--bg2, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 14px;
+  padding: 18px 20px 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+body.light .del-kpi-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+/* Yellow accent bar on Card 1 (Total Requests) */
+.del-kpi-card.has-accent {
+  border-top: 3px solid #FFD11A;
+}
+
+.del-kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.del-kpi-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted, #64748b);
+}
+
+.del-kpi-icon-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.del-kpi-icon-badge.blue {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.del-kpi-icon-badge.amber {
+  background: #fefce8;
+  color: #eab308;
+}
+
+.del-kpi-icon-badge.emerald {
+  background: #ecfdf5;
+  color: #10b981;
+}
+
+.del-kpi-icon-badge.rose {
+  background: #fff1f2;
+  color: #f43f5e;
+}
+
+.del-kpi-value {
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text, #0f172a);
+}
+
+.del-kpi-value.amber { color: #eab308; }
+.del-kpi-value.emerald { color: #10b981; }
+.del-kpi-value.rose { color: #f43f5e; }
+
+.del-kpi-footer {
+  font-size: 0.76rem;
+  color: var(--text-muted, #64748b);
+  margin-top: 2px;
+}
+
+.del-kpi-footer.amber { color: #d97706; }
+.del-kpi-footer.emerald { color: #10b981; }
+.del-kpi-footer.rose { color: #e11d48; }
+
+/* ---------- Main Table Container Card ---------- */
+.del-content-card {
+  background: var(--bg2, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+body.light .del-content-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+/* Toolbar Row 1 (Search + Tabs + Export Buttons) */
+.del-toolbar-row-1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.del-toolbar-left-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 300px;
+  flex-wrap: wrap;
+}
+
+/* Search Field */
+.del-search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg3, #f8fafc);
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 9999px;
+  padding: 7px 16px;
+  min-width: 280px;
+  max-width: 360px;
+  flex: 1;
+}
+
+body.light .del-search-field {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.del-search-field input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.84rem;
+  color: var(--text, #0f172a);
+  width: 100%;
+}
+
+.del-search-field input::placeholder {
+  color: #94a3b8;
+}
+
+/* Export Buttons Group */
+.del-export-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.del-export-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  background: #ffffff;
+  border: 1px solid var(--border, #e2e8f0);
+}
+
+body.light .del-export-pill {
+  background: #ffffff;
+}
+
+.del-export-pill.excel {
+  color: #10b981;
+  border-color: #a7f3d0;
+}
+
+.del-export-pill.excel:hover {
+  background: #ecfdf5;
+  border-color: #10b981;
+}
+
+.del-export-pill.pdf {
+  color: #ef4444;
+  border-color: #fecdd3;
+}
+
+.del-export-pill.pdf:hover {
+  background: #fff1f2;
+  border-color: #ef4444;
+}
+
+/* Toolbar Row 2 (Filter Dropdowns below search) */
+.del-toolbar-row-2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.del-dropdown-pill {
+  background: var(--bg3, #f8fafc);
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 9999px;
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text, #1e293b);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px;
+  padding-right: 32px;
+}
+
+body.light .del-dropdown-pill {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+/* ---------- Table Container ---------- */
+.del-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border, #f1f5f9);
+  border-radius: 10px;
+}
+
+body.light .del-table-container {
+  border-color: #f1f5f9;
+}
+
+.del-golidoli-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.del-golidoli-table th {
+  background: var(--bg3, #f8fafc);
+  padding: 12px 14px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #64748b;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  text-align: left;
+  white-space: nowrap;
+}
+
+body.light .del-golidoli-table th {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.del-golidoli-table td {
+  padding: 14px 14px;
+  border-bottom: 1px solid var(--border, #f1f5f9);
+  font-size: 0.85rem;
+  color: var(--text, #0f172a);
+  vertical-align: middle;
+}
+
+body.light .del-golidoli-table td {
+  border-color: #f1f5f9;
+}
+
+.del-golidoli-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* User Cell */
+.del-user-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.del-avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: #9333ea;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.78rem;
+  flex-shrink: 0;
+}
+
+.del-user-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.del-name-title {
+  font-weight: 700;
+  color: var(--text, #0f172a);
+  font-size: 0.86rem;
+}
+
+.del-id-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: monospace, Consolas, monospace;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.del-inline-copy-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.del-inline-copy-btn:hover {
+  color: #0f172a;
+  background: #e2e8f0;
+}
+
+/* Reason Cell (GoliDoli Style) */
+.del-reason-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.del-reason-pill-box {
+  display: inline-block;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #334155;
+  width: fit-content;
+}
+
+body.dark .del-reason-pill-box {
+  background: var(--bg3);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.del-user-comment-line {
+  font-size: 0.74rem;
+  color: #64748b;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- GoliDoli Status Pill Badge ---------- */
+.del-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.del-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Status: Pending (Amber/Yellow) */
+.del-status-pill.pending {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+body.dark .del-status-pill.pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Status: Approved (Emerald/Green) */
+.del-status-pill.approved {
+  background: #d1fae5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+body.dark .del-status-pill.approved {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+/* Status: Rejected (Rose/Red) */
+.del-status-pill.rejected {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecdd3;
+}
+
+body.dark .del-status-pill.rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ---------- GoliDoli 3 Action Square Buttons ---------- */
+.del-action-buttons-group {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.del-action-square-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+body.dark .del-action-square-btn {
+  background: var(--bg2, #1e293b);
+  border-color: var(--border, #334155);
+  color: var(--text-muted, #94a3b8);
+}
+
+/* 1. View button hover (Blue) */
+.del-action-square-btn.view:hover:not(:disabled) {
+  border-color: #93c5fd;
+  color: #2563eb;
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+body.dark .del-action-square-btn.view:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+
+/* 2. Approve button hover (Emerald) */
+.del-action-square-btn.approve:hover:not(:disabled) {
+  border-color: #86efac;
+  color: #16a34a;
+  background: #f0fdf4;
+  transform: translateY(-1px);
+}
+
+body.dark .del-action-square-btn.approve:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: #22c55e;
+  color: #4ade80;
+}
+
+/* 3. Reject button hover (Red) */
+.del-action-square-btn.reject:hover:not(:disabled) {
+  border-color: #fca5a5;
+  color: #dc2626;
+  background: #fef2f2;
+  transform: translateY(-1px);
+}
+
+body.dark .del-action-square-btn.reject:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #f87171;
+}
+
+.del-action-square-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---------- Delete Requests Modal Dialogs (GoliDoli Popup Style) ---------- */
+.del-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 16px;
+}
+
+.del-modal-card {
+  background: var(--bg2, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+body.dark .del-modal-card {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.del-modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg3, #f8fafc);
+}
+
+body.dark .del-modal-header {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.del-modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 75vh;
+  overflow-y: auto;
+  font-size: 0.88rem;
+  color: var(--text, #0f172a);
+}
+
+.del-modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border, #e2e8f0);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  background: var(--bg3, #f8fafc);
+}
+
+body.dark .del-modal-footer {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+/* Footer Pagination */
+.del-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.del-footer-count {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.del-pager-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.del-pager-btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  transition: all 0.15s ease;
+}
+
+.del-pager-btn:hover:not(:disabled) {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
+.del-pager-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.del-pager-indicator {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0 8px;
+  color: #64748b;
+}

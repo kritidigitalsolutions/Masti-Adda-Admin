@@ -159,6 +159,9 @@ app.use(
   adminUserRoutes
 );
 
+const adminDeleteAccountRoutes = require("./routes/admin/deleteAccountRequest.routes");
+app.use("/api/admin/delete-account-requests", adminDeleteAccountRoutes);
+
 app.use(
   "/api/admin/movies",
   updateUpcomingStatus,
@@ -232,6 +235,10 @@ app.use(
   "/api/user",
   userRoutes
 );
+
+const userDeleteAccountRoutes = require("./routes/user/deleteAccountRequest.routes");
+app.use("/api/user/delete-account-request", userDeleteAccountRoutes);
+app.use("/api/user/delete-account-requests", userDeleteAccountRoutes);
 
 // ========================================
 // CONTENT PREFERENCE ROUTES
